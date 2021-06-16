@@ -1,0 +1,10 @@
+*.d
+*.obj
+*.o
+ProyectoFinalSisEmb.X/nbproject/private/
+ProyectoFinalSisEmb.X/nbproject/Package-*.bash
+build/
+debug/
+dist/
+ProyectoFinalSisEmb.X/nbproject/Makefile-*
+*.map
