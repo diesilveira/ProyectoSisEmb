@@ -62,6 +62,7 @@
  */
 
 void getAccelerometer(void *params);
+void prendeLedsConADC(void *params);
 
 int main(void) {
     // initialize the device
@@ -77,7 +78,7 @@ int main(void) {
     /* Create the tasks defined within this file. */
     xTaskCreate(getAccelerometer, "Accelerometer", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(ANALOG_convert, "adcConvert", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
-
+    xTaskCreate(prendeLedsConADC, "prendeleds", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     /* Finally start the scheduler. */
     vTaskStartScheduler();
 
@@ -115,6 +116,7 @@ void prendeLedsConADC(void *params) {
     ws2812_t leds[8];
     WS2812_initializeLedArray(leds, 8);
     int ledColor = 2;
+    int ledColorApagado = 4;
     int hardwareLedNumber = 2;
     while (1) {
         resultado = ANALOG_getResult();
@@ -123,6 +125,12 @@ void prendeLedsConADC(void *params) {
             //Enviamos todos los valores incluyendo los que ya estaban
             //para conservar los que ya fueron setearon.
             WS2812_send(leds, 8);
+        } else {
+            WS2812_setLEDColor(leds, ledColorApagado, hardwareLedNumber);
+            //Enviamos todos los valores incluyendo los que ya estaban
+            //para conservar los que ya fueron setearon.
+            WS2812_send(leds, 8);
+            
         }
     }
 }
