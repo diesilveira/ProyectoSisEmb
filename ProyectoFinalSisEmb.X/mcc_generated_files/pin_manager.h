@@ -56,6 +56,188 @@
 */
 /**
   @Summary
+    Sets the GPIO pin, RA10, high using LATA10.
+
+  @Description
+    Sets the GPIO pin, RA10, high using LATA10.
+
+  @Preconditions
+    The RA10 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RA10 high (1)
+    LED_CTRL_SetHigh();
+    </code>
+
+*/
+#define LED_CTRL_SetHigh()          ( LATASET = (1 << 10) )
+/**
+  @Summary
+    Sets the GPIO pin, RA10, low using LATA10.
+
+  @Description
+    Sets the GPIO pin, RA10, low using LATA10.
+
+  @Preconditions
+    The RA10 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RA10 low (0)
+    LED_CTRL_SetLow();
+    </code>
+
+*/
+#define LED_CTRL_SetLow()           ( LATACLR = (1 << 10) )
+
+/**
+  @Summary
+    Sets a value to the GPIO pin.
+
+  @Description
+    Sets or Resets the GPIO pin, RA10, low or high using LATA10.
+
+  @Preconditions
+    The RA10 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    bool value; : value to be set to the GPIO pin.
+
+  @Example
+    <code>
+    // Set RA10 to low.
+    LED_CTRL_SetValue(false);
+    </code>
+
+*/
+inline static void LED_CTRL_SetValue(bool value)
+{
+  if(value)
+  {
+    LED_CTRL_SetHigh();
+  }
+  else
+  {
+    LED_CTRL_SetLow();
+  }
+}
+
+/**
+  @Summary
+    Toggles the GPIO pin, RA10, using LATA10.
+
+  @Description
+    Toggles the GPIO pin, RA10, using LATA10.
+
+  @Preconditions
+    The RA10 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Toggle RA10
+    LED_CTRL_Toggle();
+    </code>
+
+*/
+#define LED_CTRL_Toggle()           ( LATAINV = (1 << 10) )
+/**
+  @Summary
+    Reads the value of the GPIO pin, RA10.
+
+  @Description
+    Reads the value of the GPIO pin, RA10.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    uint16_t portValue;
+
+    // Read RA10
+    postValue = LED_CTRL_GetValue();
+    </code>
+
+*/
+#define LED_CTRL_GetValue()         PORTAbits.RA10
+/**
+  @Summary
+    Configures the GPIO pin, RA10, as an input.
+
+  @Description
+    Configures the GPIO pin, RA10, as an input.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RA10 as an input
+    LED_CTRL_SetDigitalInput();
+    </code>
+
+*/
+#define LED_CTRL_SetDigitalInput()   ( TRISASET = (1 << 10) )
+/**
+  @Summary
+    Configures the GPIO pin, RA10, as an output.
+
+  @Description
+    Configures the GPIO pin, RA10, as an output.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RA10 as an output
+    LED_CTRL_SetDigitalOutput();
+    </code>
+
+*/
+#define LED_CTRL_SetDigitalOutput()   ( TRISACLR = (1 << 10) )
+/**
+  @Summary
     Sets the GPIO pin, RA13, high using LATA13.
 
   @Description
@@ -1328,6 +1510,188 @@ inline static void ACC_SCK_SetValue(bool value)
 
 */
 #define ACC_SCK_SetDigitalOutput()   ( TRISCCLR = (1 << 13) )
+/**
+  @Summary
+    Sets the GPIO pin, RC5, high using LATC5.
+
+  @Description
+    Sets the GPIO pin, RC5, high using LATC5.
+
+  @Preconditions
+    The RC5 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RC5 high (1)
+    channel_POT_SetHigh();
+    </code>
+
+*/
+#define channel_POT_SetHigh()          ( LATCSET = (1 << 5) )
+/**
+  @Summary
+    Sets the GPIO pin, RC5, low using LATC5.
+
+  @Description
+    Sets the GPIO pin, RC5, low using LATC5.
+
+  @Preconditions
+    The RC5 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RC5 low (0)
+    channel_POT_SetLow();
+    </code>
+
+*/
+#define channel_POT_SetLow()           ( LATCCLR = (1 << 5) )
+
+/**
+  @Summary
+    Sets a value to the GPIO pin.
+
+  @Description
+    Sets or Resets the GPIO pin, RC5, low or high using LATC5.
+
+  @Preconditions
+    The RC5 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    bool value; : value to be set to the GPIO pin.
+
+  @Example
+    <code>
+    // Set RC5 to low.
+    channel_POT_SetValue(false);
+    </code>
+
+*/
+inline static void channel_POT_SetValue(bool value)
+{
+  if(value)
+  {
+    channel_POT_SetHigh();
+  }
+  else
+  {
+    channel_POT_SetLow();
+  }
+}
+
+/**
+  @Summary
+    Toggles the GPIO pin, RC5, using LATC5.
+
+  @Description
+    Toggles the GPIO pin, RC5, using LATC5.
+
+  @Preconditions
+    The RC5 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Toggle RC5
+    channel_POT_Toggle();
+    </code>
+
+*/
+#define channel_POT_Toggle()           ( LATCINV = (1 << 5) )
+/**
+  @Summary
+    Reads the value of the GPIO pin, RC5.
+
+  @Description
+    Reads the value of the GPIO pin, RC5.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    uint16_t portValue;
+
+    // Read RC5
+    postValue = channel_POT_GetValue();
+    </code>
+
+*/
+#define channel_POT_GetValue()         PORTCbits.RC5
+/**
+  @Summary
+    Configures the GPIO pin, RC5, as an input.
+
+  @Description
+    Configures the GPIO pin, RC5, as an input.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RC5 as an input
+    channel_POT_SetDigitalInput();
+    </code>
+
+*/
+#define channel_POT_SetDigitalInput()   ( TRISCSET = (1 << 5) )
+/**
+  @Summary
+    Configures the GPIO pin, RC5, as an output.
+
+  @Description
+    Configures the GPIO pin, RC5, as an output.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RC5 as an output
+    channel_POT_SetDigitalOutput();
+    </code>
+
+*/
+#define channel_POT_SetDigitalOutput()   ( TRISCCLR = (1 << 5) )
 /**
   @Summary
     Sets the GPIO pin, RD0, high using LATD0.

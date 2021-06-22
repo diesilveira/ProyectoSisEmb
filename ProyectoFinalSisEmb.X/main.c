@@ -18,7 +18,7 @@
     The generated drivers are tested against the following:
         Compiler          :  XC16 v1.50
         MPLAB 	          :  MPLAB X v5.35
-*/
+ */
 
 /*
     (c) 2020 Microchip Technology Inc. and its subsidiaries. You may use this
@@ -53,35 +53,81 @@
 #include "mcc_generated_files/system.h"
 #include "mcc_generated_files/pin_manager.h"
 #include "framework/Accelerometer/Accelerometer.h"
-
+#include "framework/Analog/Analog.h"
+#include "WS2812.h"
+#include <stdbool.h>
 
 /*
-                         Main application
+    Main application
  */
-int main(void)
-{
+
+void getAccelerometer(void *params);
+
+int main(void) {
     // initialize the device
-    SYSTEM_Initialize( );
-//    while (!ACCEL_init()){
-//
-//    }
-    
-    
+    SYSTEM_Initialize();
+    bool init = ACCEL_init();
+
+    while (!init) {
+        ACCEL_init();
+    }
+    LEDA_SetLow();
+
+
     /* Create the tasks defined within this file. */
-    //xTaskCreate( blinkLED, "task1", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+1, NULL );
-    
+    xTaskCreate(getAccelerometer, "Accelerometer", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(ANALOG_convert, "adcConvert", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+
     /* Finally start the scheduler. */
-    vTaskStartScheduler( );
+    vTaskStartScheduler();
 
     /* If all is well, the scheduler will now be running, and the following line
     will never be reached.  If the following line does execute, then there was
     insufficient FreeRTOS heap memory available for the idle and/or timer tasks
     to be created.  See the memory management section on the FreeRTOS web site
     for more details. */
-    for(;;);
+    for (;;);
 }
 
-void vApplicationMallocFailedHook( void ){
+void getAccelerometer(void *params) {
+    Accel_t nueva;
+    nueva.Accel_X = 0;
+    nueva.Accel_Y = 0;
+    nueva.Accel_Z = 0;
+    while (1) {
+        Accel_t nueva;
+        bool accel = ACCEL_GetAccel(&nueva);
+        while (!accel) {
+            accel = ACCEL_GetAccel(&nueva);
+        }
+        if (nueva.Accel_X > 3 || nueva.Accel_Y > 3 || nueva.Accel_Z > 3) {
+            LEDA_SetHigh();
+        }
+        if (nueva.Accel_X == 0 || nueva.Accel_Y == 0 || nueva.Accel_Z == 0) {
+            LEDA_SetLow();
+        }
+    }
+
+}
+
+void prendeLedsConADC(void *params) {
+    uint16_t resultado = 0;
+    ws2812_t leds[8];
+    WS2812_initializeLedArray(leds, 8);
+    int ledColor = 2;
+    int hardwareLedNumber = 2;
+    while (1) {
+        resultado = ANALOG_getResult();
+        if (resultado > 512) {
+            WS2812_setLEDColor(leds, ledColor, hardwareLedNumber);
+            //Enviamos todos los valores incluyendo los que ya estaban
+            //para conservar los que ya fueron setearon.
+            WS2812_send(leds, 8);
+        }
+    }
+}
+
+void vApplicationMallocFailedHook(void) {
     /* vApplicationMallocFailedHook() will only be called if
     configUSE_MALLOC_FAILED_HOOK is set to 1 in FreeRTOSConfig.h.  It is a hook
     function that will get called if a call to pvPortMalloc() fails.
@@ -92,13 +138,13 @@ void vApplicationMallocFailedHook( void ){
     FreeRTOSConfig.h, and the xPortGetFreeHeapSize() API function can be used
     to query the size of free heap space that remains (although it does not
     provide information on how the remaining heap might be fragmented). */
-    taskDISABLE_INTERRUPTS( );
-    for(;;);
+    taskDISABLE_INTERRUPTS();
+    for (;;);
 }
 
 /*-----------------------------------------------------------*/
 
-void vApplicationIdleHook( void ){
+void vApplicationIdleHook(void) {
     /* vApplicationIdleHook() will only be called if configUSE_IDLE_HOOK is set
     to 1 in FreeRTOSConfig.h.  It will be called on each iteration of the idle
     task.  It is essential that code added to this hook function never attempts
@@ -112,7 +158,7 @@ void vApplicationIdleHook( void ){
 
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName ){
+void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName) {
     (void) pcTaskName;
     (void) pxTask;
 
@@ -120,13 +166,13 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName ){
     configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook	function is 
     called if a task stack overflow is detected.  Note the system/interrupt
     stack is not checked. */
-    taskDISABLE_INTERRUPTS( );
-    for(;;);
+    taskDISABLE_INTERRUPTS();
+    for (;;);
 }
 
 /*-----------------------------------------------------------*/
 
-void vApplicationTickHook( void ){
+void vApplicationTickHook(void) {
     /* This function will be called by each tick interrupt if
     configUSE_TICK_HOOK is set to 1 in FreeRTOSConfig.h.  User code can be
     added here, but the tick hook is called from an interrupt context, so
@@ -138,8 +184,8 @@ void vApplicationTickHook( void ){
 
 /*-----------------------------------------------------------*/
 
-void vAssertCalled( const char * pcFile, unsigned long ulLine ){
-    volatile unsigned long ul=0;
+void vAssertCalled(const char * pcFile, unsigned long ulLine) {
+    volatile unsigned long ul = 0;
 
     (void) pcFile;
     (void) ulLine;
@@ -148,8 +194,8 @@ void vAssertCalled( const char * pcFile, unsigned long ulLine ){
     {
         /* Set ul to a non-zero value using the debugger to step out of this
         function. */
-        while(ul==0){
-            portNOP( );
+        while (ul == 0) {
+            portNOP();
         }
     }
     __asm volatile( "ei");
@@ -157,5 +203,5 @@ void vAssertCalled( const char * pcFile, unsigned long ulLine ){
 
 /**
  End of File
-*/
+ */
 
