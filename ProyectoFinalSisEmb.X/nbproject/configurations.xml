@@ -48,6 +48,8 @@
       <itemPath>platform/WS2812.h</itemPath>
       <itemPath>platform/serial_port_manager.h</itemPath>
       <itemPath>framework/user_communications.h</itemPath>
+      <itemPath>platform/SIM808.h</itemPath>
+      <itemPath>framework/GPS.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -93,6 +95,8 @@
       <itemPath>platform/WS2812.c</itemPath>
       <itemPath>platform/serial_port_manager.c</itemPath>
       <itemPath>framework/user_communications.c</itemPath>
+      <itemPath>platform/SIM808.c</itemPath>
+      <itemPath>framework/GPS.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

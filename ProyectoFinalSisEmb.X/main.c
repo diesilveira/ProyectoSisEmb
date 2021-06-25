@@ -56,6 +56,9 @@
 #include "framework/Analog/Analog.h"
 #include "WS2812.h"
 #include <stdbool.h>
+#include "framework/user_communications.h"
+#include "framework/GPS.h"
+#include "platform/SIM808.h"
 
 /*
     Main application
@@ -79,6 +82,10 @@ int main(void) {
     xTaskCreate(getAccelerometer, "Accelerometer", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(ANALOG_convert, "adcConvert", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(prendeLedsConADC, "prendeleds", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(initializeMenu, "comunicacionSerial", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate( SIM808_taskCheck, "modemTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+1, NULL );
+    xTaskCreate( SIM808_initModule, "modemIni", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+2, &modemInitHandle );
+
     /* Finally start the scheduler. */
     vTaskStartScheduler();
 

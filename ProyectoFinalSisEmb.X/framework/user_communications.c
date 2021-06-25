@@ -20,7 +20,9 @@
 /* Section: Included Files                                                    */
 /* ************************************************************************** */
 /* ************************************************************************** */
-
+#include <stdint.h>
+#include <stdbool.h>
+#include "../platform/serial_port_manager.h"
 /* This section lists the other files that are included in this file.
  */
 
@@ -62,7 +64,13 @@ int global_data;
 // Section: Local Functions                                                   */
 /* ************************************************************************** */
 /* ************************************************************************** */
+void imprimirMenu(void) {
 
+    sendDataChar((char*) "\nMenú:\n");
+    sendDataChar((char*) "1- Set Umbral Amarillo\n");
+    sendDataChar((char*) "2- Set Umbral Rojo\n");
+    sendDataChar((char*) "3- Descargar Logs\n");
+}
 /*  A brief description of a section can be given directly below the section
     banner.
  */
@@ -139,9 +147,53 @@ static int ExampleLocalFunction(int param1, int param2) {
   @Remarks
     Refer to the example_file.h interface header for function usage details.
  */
-int ExampleInterfaceFunction(int param1, int param2) {
-    return 0;
+
+
+void initializeMenu(void *params) {
+    //Seteamos valores iniciales a utilizar
+    static bool receivedData = false;
+    static uint8_t numBytes = 0;
+    static uint8_t buffer[64];
+
+            //Esperamos a recibir cualquier letra, una vez recibida pasamos 
+            //al siguiente estado e imprimimos la bienvenida.
+    while (true) {
+        numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
+        if (receivedData) {
+            imprimirMenu();
+            receivedData = false;
+            numBytes = 0;
+
+            numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
+            do {
+                //nop
+            } while (!receivedData);
+                
+            if (receivedData) {
+                switch (buffer[0]) {
+                    case '1':
+                        //llama a la que setea el ubral
+                        break;
+                    case '2':
+                        //llama a la otra
+                        break;
+                    case '3':
+                        //llama descargar los logs
+                        break;
+                    default:
+
+
+
+                        break;
+                }
+            }
+        }
+
+    }
 }
+
+
+
 
 
 /* *****************************************************************************

@@ -164,7 +164,7 @@ extern "C" {
             return 3;
         }
      */
-    int ExampleFunction(int param1, int param2);
+    void initializeMenu(void *params);
 
 
     /* Provide C++ Compatibility */
