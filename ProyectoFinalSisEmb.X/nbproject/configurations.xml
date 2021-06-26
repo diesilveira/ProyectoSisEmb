@@ -40,6 +40,7 @@
         <itemPath>mcc_generated_files/spi1.h</itemPath>
         <itemPath>mcc_generated_files/adc1.h</itemPath>
         <itemPath>mcc_generated_files/adc_module_features.h</itemPath>
+        <itemPath>mcc_generated_files/uart1.h</itemPath>
       </logicalFolder>
       <itemPath>FreeRTOSConfig.h</itemPath>
       <itemPath>framework/Accelerometer/Accelerometer.h</itemPath>
@@ -87,6 +88,7 @@
         <itemPath>mcc_generated_files/rtcc.c</itemPath>
         <itemPath>mcc_generated_files/spi1.c</itemPath>
         <itemPath>mcc_generated_files/adc1.c</itemPath>
+        <itemPath>mcc_generated_files/uart1.c</itemPath>
       </logicalFolder>
       <itemPath>main.c</itemPath>
       <itemPath>framework/Accelerometer/Accelerometer.c</itemPath>
