@@ -42,7 +42,7 @@
 /************************* DATA TYPES ******************************************/    
 /*******************************************************************************/       
 typedef struct{
-	double latitude;                                                      
+	double latitude;                                                     
 	double longitude;
 }GPSPosition_t;
 

@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "../platform/serial_port_manager.h"
+#include "../platform/SIM808.h"
+#include "GPS.h"
 /* This section lists the other files that are included in this file.
  */
 
@@ -63,6 +65,7 @@ int global_data;
 /* ************************************************************************** */
 // Section: Local Functions                                                   */
 /* ************************************************************************** */
+
 /* ************************************************************************** */
 void imprimirMenu(void) {
 
@@ -155,8 +158,8 @@ void initializeMenu(void *params) {
     static uint8_t numBytes = 0;
     static uint8_t buffer[64];
 
-            //Esperamos a recibir cualquier letra, una vez recibida pasamos 
-            //al siguiente estado e imprimimos la bienvenida.
+    //Esperamos a recibir cualquier letra, una vez recibida pasamos 
+    //al siguiente estado e imprimimos la bienvenida.
     while (true) {
         numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
         if (receivedData) {
@@ -166,16 +169,48 @@ void initializeMenu(void *params) {
 
             numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
             do {
-                //nop
+                numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
             } while (!receivedData);
-                
+
             if (receivedData) {
                 switch (buffer[0]) {
                     case '1':
                         //llama a la que setea el ubral
                         break;
-                    case '2':
-                        //llama a la otra
+                    case '2':;
+
+                        uint8_t p_dest;
+                        int8_t vinoTrama = false;
+                        int8_t esValida = false;
+                        sendDataChar((char*) " entre en GPS\n");
+                        vinoTrama = SIM808_getNMEA(&p_dest);
+
+                        if (vinoTrama == true) {
+                            sendDataChar((char*) "vino trama\n");
+                            esValida = SIM808_validateNMEAFrame(&p_dest);
+                            while (esValida == false) {
+                                sendDataChar((char*) "NV1\n");
+                                SIM808_getNMEA(&p_dest);
+                                sendDataChar((char*) "NV2\n");
+                                esValida = SIM808_validateNMEAFrame(&p_dest);
+                                sendDataChar((char*) "NV3\n");
+
+                            }
+
+                            sendDataChar((char*) "VALIDA");
+                            GPSPosition_t p_pos;
+                            GPS_getPosition(&p_pos, &p_dest);
+                            sendDataChar((char*) "VALIDA");
+                            uint8_t p_linkDest;
+                            GPS_generateGoogleMaps(&p_linkDest, p_pos);
+                            //sendDataChar((char*) p_linkDest);
+                            sendDataChar((char*) "obtuvo el coso gmaps");
+                            sendDataChar((char*) &p_linkDest);
+                            
+                        } else {
+                            sendDataChar((char*) "no vino trama");
+                            break;
+                        }
                         break;
                     case '3':
                         //llama descargar los logs

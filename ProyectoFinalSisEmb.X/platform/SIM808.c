@@ -19,10 +19,11 @@
 /*******************************************************************************/
 
 #include "SIM808.h"
-
-#include "../../mcc_generated_files/pin_manager.h"
-#include "../../mcc_generated_files/uart1.h"
+//#include <stdbool.h>
+#include "../mcc_generated_files/pin_manager.h"
+#include "../mcc_generated_files/uart1.h"
 #include <string.h>
+#include <stdlib.h>
 
 
 /*******************************************************************************/
@@ -178,6 +179,7 @@ static void SIM808_initGSM( void* p_param ){
     int8_t resultExchange;
 
     while( 1 ){
+  
         if( xSemaphoreTake( c_semIsModuleOnAndReady, pdMS_TO_TICKS( SIM808_TURN_ON_GSM_TIMEOUT_ms ) )==pdTRUE ){
             if( (resultExchange = SIM808_exchangeCmd( ATREQ_PIN_QUERY, ATRES_PIN_READY, SIM808_UART_TIMEOUT_ms, SIM808_MAX_RETRIES ))==true ){
                 if( (resultExchange = SIM808_exchangeCmd( ATREQ_OP_ANTEL, ATRES_OK, SIM808_UART_TIMEOUT_ms, SIM808_MAX_RETRIES ))==true ){
@@ -186,8 +188,8 @@ static void SIM808_initGSM( void* p_param ){
                             if( (resultExchange = SIM808_exchangeCmd( ATREQ_SMS_FORMAT, ATRES_OK, SIM808_UART_TIMEOUT_ms, SIM808_MAX_RETRIES ))==true ){
                                 // Estoy registrado en la red y ya puedo enviar mensajes
                                 xSemaphoreGive( c_semIsModuleOnAndReady ); /** Libero el semáforo para que otro pueda hablarle al módulo */
-                                xSemaphoreGive( c_semGSMIsReady ); /** Habilito el uso de GPS */
-                                vTaskDelete( initGSMHandle );
+//                                xSemaphoreGive( c_semGSMIsReady ); /** Habilito el uso de GPS */
+//                                vTaskDelete( initGSMHandle );
                             }
                             else{
                                 // Fallo el seteo de modo texto
@@ -268,7 +270,7 @@ void SIM808_taskCheck( void* p_param ){
     c_semTxReady = xSemaphoreCreateBinary( );
     c_semRxIsDataAvailable = xSemaphoreCreateBinary( );
     c_semGPSIsReady = xSemaphoreCreateBinary( );
-    //c_semGSMIsReady = xSemaphoreCreateBinary( );
+//    c_semGSMIsReady = xSemaphoreCreateBinary( );
     
     while( 1 ){
         if( GPRS_STATUS_GetValue( )==1 ){
@@ -286,7 +288,7 @@ void SIM808_taskCheck( void* p_param ){
             xSemaphoreTake( c_semTxReady, pdMS_TO_TICKS( 10 ) );
             xSemaphoreTake( c_semRxIsDataAvailable, pdMS_TO_TICKS( 10 ) );
             xSemaphoreTake( c_semGPSIsReady, pdMS_TO_TICKS( 10 ) );
-            //xSemaphoreTake( c_semGSMIsReady, pdMS_TO_TICKS( 10 ) );
+//            xSemaphoreTake( c_semGSMIsReady, pdMS_TO_TICKS( 10 ) );
         }
     }
 }
@@ -306,7 +308,7 @@ void SIM808_initModule( void *p_param ){
             if( (resultExchange = SIM808_exchangeCmd( ATREQ_AT, ATRES_OK, SIM808_UART_TIMEOUT_ms, SIM808_MAX_RETRIES ))==true ){
                 if( (resultExchange = SIM808_exchangeCmd( ATREQ_ECHO_OFF, ATRES_OK, SIM808_UART_TIMEOUT_ms, SIM808_MAX_RETRIES ))==true ){
                     xSemaphoreGive( c_semIsModuleOnAndReady );
-                    //xTaskCreate( SIM808_initGSM, "iniGSM", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+3, &initGSMHandle );
+//                    xTaskCreate( SIM808_initGSM, "iniGSM", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+3, &initGSMHandle );
                     xTaskCreate( SIM808_initGPS, "iniGPS", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+2, &initGPSHandle );
                     vTaskDelete( modemInitHandle );
                 }
@@ -403,7 +405,9 @@ int8_t SIM808_sendSMS( uint8_t *p_phoneNr, uint8_t *p_string ){
  */
 int8_t SIM808_getNMEA( uint8_t *p_dest ){
     int8_t resultExchange;
-
+    
+    //if( SIM808_exchangeCmd( ATREQ_GPS_INFO, ATRES_OK, SIM808_UART_TIMEOUT_ms, SIM808_MAX_RETRIES )){
+    
     if( (resultExchange = SIM808_exchangeCmd( ATREQ_GPS_INFO, ATRES_OK, SIM808_UART_TIMEOUT_ms, SIM808_MAX_RETRIES ))==true ){
         strcpy( p_dest, c_simRxBuffer );
         return true;

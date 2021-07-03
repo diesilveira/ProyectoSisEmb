@@ -3124,10 +3124,4 @@ uint32_t USBGet1msTickCount(void)
         return USB1msTickCount;
     #endif
 }
-
-
-
-
-
-
 /** EOF USBDevice.c *****************************************************/
