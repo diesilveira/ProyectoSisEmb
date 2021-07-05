@@ -165,6 +165,9 @@ extern "C" {
         }
      */
     void initializeMenu(void *params);
+    void getTrama(uint8_t trama[256]);
+
+    void generateTrama(void *params);
 
 
     /* Provide C++ Compatibility */

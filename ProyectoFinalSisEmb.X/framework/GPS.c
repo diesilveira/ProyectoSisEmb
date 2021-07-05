@@ -16,6 +16,7 @@
 /************************* INCLUDED FILES **************************************/
 /*******************************************************************************/
 #include "GPS.h"
+//#include "../platform/SIM808.h"
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
@@ -41,13 +42,13 @@
     @Remarks
         String must start after +CGNSINF: 
  **/
-void GPS_getPosition( GPSPosition_t *p_pos, uint8_t *p_sentence ){
+void GPS_getPosition(GPSPosition_t *p_pos, uint8_t *p_sentence) {
     uint8_t offset;
     uint8_t *ptr;
 
-    offset=GPS_RMC_RUN_LEN+GPS_RMC_COMMA_LEN+GPS_RMC_FIX_LEN+GPS_RMC_COMMA_LEN+GPS_RMC_UTC_LEN+GPS_RMC_COMMA_LEN;
-    p_pos->latitude=strtod( (p_sentence+offset), &ptr );
-    p_pos->longitude=strtod( (ptr+GPS_RMC_COMMA_LEN), &ptr );
+    offset = GPS_RMC_RUN_LEN + GPS_RMC_COMMA_LEN + GPS_RMC_FIX_LEN + GPS_RMC_COMMA_LEN + GPS_RMC_UTC_LEN + GPS_RMC_COMMA_LEN + 12;
+    p_pos->latitude = strtod((p_sentence + offset), &ptr);
+    p_pos->longitude = strtod((ptr + GPS_RMC_COMMA_LEN), &ptr);
 }
 
 /**
@@ -132,3 +133,25 @@ void GPS_generateGoogleMaps(uint8_t *p_linkDest, GPSPosition_t p_gpsData) {
     sprintf(longitude, "%f", p_gpsData.longitude);
     strcat(p_linkDest, longitude);
 }
+
+//static uint8_t p_dest[256];
+//
+//void getTrama(uint8_t trama[256]) {
+//    for (int i = 0; i < 256; i++) {
+//        trama[i] = p_dest[i];
+//    }
+//}
+//
+//void generateTrama(void *params) {
+//    uint8_t p_dest_local[256];
+//    while (true) {
+//        SIM808_getNMEA(p_dest_local);
+//        while (!SIM808_validateNMEAFrame(p_dest_local)) {
+//            SIM808_getNMEA(p_dest_local);
+//        }
+//
+//        for (int i = 0; i < 256; i++) {
+//            p_dest[i] = p_dest_local[i];
+//        }
+//    }
+//}

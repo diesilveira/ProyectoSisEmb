@@ -56,9 +56,12 @@
 #include "framework/Analog/Analog.h"
 #include "WS2812.h"
 #include <stdbool.h>
+#include <stdint.h>
 #include "framework/user_communications.h"
 #include "framework/GPS.h"
 #include "platform/SIM808.h"
+#include "platform/serial_port_manager.h"
+
 
 /*
     Main application
@@ -66,6 +69,7 @@
 
 void getAccelerometer(void *params);
 void prendeLedsConADC(void *params);
+//void generateTrama(void *params);
 
 int main(void) {
     // initialize the device
@@ -79,13 +83,14 @@ int main(void) {
 
 
     /* Create the tasks defined within this file. */
-    xTaskCreate( SIM808_taskCheck, "modemTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+1, NULL );
-    xTaskCreate( SIM808_initModule, "modemIni", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+2, &modemInitHandle );
+    xTaskCreate(SIM808_taskCheck, "modemTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(SIM808_initModule, "modemIni", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, &modemInitHandle);
     xTaskCreate(getAccelerometer, "Accelerometer", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(ANALOG_convert, "adcConvert", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(prendeLedsConADC, "prendeleds", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(initializeMenu, "comunicacionSerial", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
-    
+    xTaskCreate(generateTrama, "obtieneTramas", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(initializeMenu, "menuSerial", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+
     /* Finally start the scheduler. */
     vTaskStartScheduler();
 
@@ -137,10 +142,29 @@ void prendeLedsConADC(void *params) {
             //Enviamos todos los valores incluyendo los que ya estaban
             //para conservar los que ya fueron setearon.
             WS2812_send(leds, 8);
-            
+
         }
     }
 }
+
+//static uint8_t p_dest[256];
+//
+//uint8_t getTrama(void) {
+//    return p_dest;
+//}
+//
+//void generateTrama(void *params) {
+//
+//    int8_t esValida = false;
+//    while (true) {
+//        SIM808_getNMEA(p_dest);
+//        esValida = SIM808_validateNMEAFrame(p_dest);
+//        while (esValida == false) {
+//            SIM808_getNMEA(p_dest);
+//            esValida = SIM808_validateNMEAFrame(p_dest);
+//        }
+//    }
+//}
 
 void vApplicationMallocFailedHook(void) {
     /* vApplicationMallocFailedHook() will only be called if

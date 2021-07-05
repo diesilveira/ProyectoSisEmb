@@ -59,6 +59,8 @@
     Any additional remarks
  */
 int global_data;
+static uint8_t p_dest[256];
+static bool isPdestSet = false;
 
 
 /* ************************************************************************** */
@@ -178,39 +180,19 @@ void initializeMenu(void *params) {
                         //llama a la que setea el ubral
                         break;
                     case '2':;
-
-                        uint8_t p_dest;
-                        int8_t vinoTrama = false;
-                        int8_t esValida = false;
-                        sendDataChar((char*) " entre en GPS\n");
-                        vinoTrama = SIM808_getNMEA(&p_dest);
-
-                        if (vinoTrama == true) {
-                            sendDataChar((char*) "vino trama\n");
-                            esValida = SIM808_validateNMEAFrame(&p_dest);
-                            while (esValida == false) {
-                                sendDataChar((char*) "NV1\n");
-                                SIM808_getNMEA(&p_dest);
-                                sendDataChar((char*) "NV2\n");
-                                esValida = SIM808_validateNMEAFrame(&p_dest);
-                                sendDataChar((char*) "NV3\n");
-
-                            }
-
-                            sendDataChar((char*) "VALIDA");
-                            GPSPosition_t p_pos;
-                            GPS_getPosition(&p_pos, &p_dest);
-                            sendDataChar((char*) "VALIDA");
-                            uint8_t p_linkDest;
-                            GPS_generateGoogleMaps(&p_linkDest, p_pos);
-                            //sendDataChar((char*) p_linkDest);
-                            sendDataChar((char*) "obtuvo el coso gmaps");
-                            sendDataChar((char*) &p_linkDest);
-                            
-                        } else {
-                            sendDataChar((char*) "no vino trama");
-                            break;
+                        sendDataChar((char*) "llama al gps");
+                        
+                        while (!isPdestSet){
+                            sendDataChar((char*) "Esperando trama valida.\n");
                         }
+                        sendDataChar((char*) "tiene una trama\n");
+                        GPSPosition_t p_pos;
+                        GPS_getPosition(&p_pos, p_dest);
+                        uint8_t p_linkDest[64];
+                        GPS_generateGoogleMaps(p_linkDest, p_pos);
+                        sendDataChar((char*) p_linkDest);
+
+
                         break;
                     case '3':
                         //llama descargar los logs
@@ -227,7 +209,20 @@ void initializeMenu(void *params) {
     }
 }
 
+void generateTrama(void *params) {
+    uint8_t p_dest_local[256];
+    while (true) {
+        SIM808_getNMEA(p_dest_local);
+        while (!SIM808_validateNMEAFrame(p_dest_local)) {
+            SIM808_getNMEA(p_dest_local);
+        }
 
+        for (int i = 0; i < 256; i++) {
+            p_dest[i] = p_dest_local[i];
+        }
+        isPdestSet = true;
+    }
+}
 
 
 

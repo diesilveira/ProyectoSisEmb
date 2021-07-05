@@ -406,7 +406,7 @@ int8_t SIM808_sendSMS( uint8_t *p_phoneNr, uint8_t *p_string ){
 int8_t SIM808_getNMEA( uint8_t *p_dest ){
     int8_t resultExchange;
     
-    //if( SIM808_exchangeCmd( ATREQ_GPS_INFO, ATRES_OK, SIM808_UART_TIMEOUT_ms, SIM808_MAX_RETRIES )){
+//    if( SIM808_exchangeCmd( ATREQ_GPS_INFO, ATRES_OK, SIM808_UART_TIMEOUT_ms, SIM808_MAX_RETRIES )){
     
     if( (resultExchange = SIM808_exchangeCmd( ATREQ_GPS_INFO, ATRES_OK, SIM808_UART_TIMEOUT_ms, SIM808_MAX_RETRIES ))==true ){
         strcpy( p_dest, c_simRxBuffer );

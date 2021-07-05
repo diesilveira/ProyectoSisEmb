@@ -110,6 +110,10 @@ double GPS_getGroundDistance( GPSPosition_t *a, GPSPosition_t *b );
 
 void GPS_generateGoogleMaps( uint8_t *p_linkDest, GPSPosition_t p_gpsData );
 
+//void getTrama(uint8_t trama[256]);
+//
+//void generateTrama(void *params);
+
 #endif	/* GPS_H */
 
 
