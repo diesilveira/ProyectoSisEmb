@@ -210,14 +210,14 @@ void initializeMenu(void *params) {
 }
 
 void generateTrama(void *params) {
-    uint8_t p_dest_local[256];
+    uint8_t p_dest_local[110];
     while (true) {
         SIM808_getNMEA(p_dest_local);
         while (!SIM808_validateNMEAFrame(p_dest_local)) {
             SIM808_getNMEA(p_dest_local);
         }
 
-        for (int i = 0; i < 256; i++) {
+        for (int i = 0; i < 98; i++) {
             p_dest[i] = p_dest_local[i];
         }
         isPdestSet = true;
