@@ -40,7 +40,7 @@
         Fills the position structure with information from the GPS frame received.
    
     @Remarks
-        String must start after +CGNSINF: 
+        String must start with +CGNSINF: 
  **/
 void GPS_getPosition(GPSPosition_t *p_pos, uint8_t *p_sentence) {
     uint8_t offset;

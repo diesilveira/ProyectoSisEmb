@@ -54,13 +54,14 @@
 #include "mcc_generated_files/pin_manager.h"
 #include "framework/Accelerometer/Accelerometer.h"
 #include "framework/Analog/Analog.h"
-#include "WS2812.h"
+//#include "WS2812.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include "framework/user_communications.h"
 #include "framework/GPS.h"
 #include "platform/SIM808.h"
 #include "platform/serial_port_manager.h"
+#include "crash_manager.h"
 
 
 /*
@@ -68,7 +69,7 @@
  */
 
 void getAccelerometer(void *params);
-void prendeLedsConADC(void *params);
+//void prendeLedsConADC(void *params);
 //void generateTrama(void *params);
 
 int main(void) {
@@ -87,7 +88,7 @@ int main(void) {
     xTaskCreate(SIM808_initModule, "modemIni", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, &modemInitHandle);
     xTaskCreate(getAccelerometer, "Accelerometer", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(ANALOG_convert, "adcConvert", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(prendeLedsConADC, "prendeleds", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(getADC, "prendeleds", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(generateTrama, "obtieneTramas", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(initializeMenu, "menuSerial", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
 
@@ -123,29 +124,29 @@ void getAccelerometer(void *params) {
 
 }
 
-void prendeLedsConADC(void *params) {
-    uint16_t resultado = 0;
-    ws2812_t leds[8];
-    WS2812_initializeLedArray(leds, 8);
-    int ledColor = 2;
-    int ledColorApagado = 4;
-    int hardwareLedNumber = 2;
-    while (1) {
-        resultado = ANALOG_getResult();
-        if (resultado > 512) {
-            WS2812_setLEDColor(leds, ledColor, hardwareLedNumber);
-            //Enviamos todos los valores incluyendo los que ya estaban
-            //para conservar los que ya fueron setearon.
-            WS2812_send(leds, 8);
-        } else {
-            WS2812_setLEDColor(leds, ledColorApagado, hardwareLedNumber);
-            //Enviamos todos los valores incluyendo los que ya estaban
-            //para conservar los que ya fueron setearon.
-            WS2812_send(leds, 8);
-
-        }
-    }
-}
+//void prendeLedsConADC(void *params) {
+//    uint16_t resultado = 0;
+//    ws2812_t leds[8];
+//    WS2812_initializeLedArray(leds, 8);
+//    int ledColor = 2;
+//    int ledColorApagado = 4;
+//    int hardwareLedNumber = 2;
+//    while (1) {
+//        resultado = ANALOG_getResult();
+//        if (resultado > 512) {
+//            WS2812_setLEDColor(leds, ledColor, hardwareLedNumber);
+//            //Enviamos todos los valores incluyendo los que ya estaban
+//            //para conservar los que ya fueron setearon.
+//            WS2812_send(leds, 8);
+//        } else {
+//            WS2812_setLEDColor(leds, ledColorApagado, hardwareLedNumber);
+//            //Enviamos todos los valores incluyendo los que ya estaban
+//            //para conservar los que ya fueron setearon.
+//            WS2812_send(leds, 8);
+//
+//        }
+//    }
+//}
 
 //static uint8_t p_dest[256];
 //

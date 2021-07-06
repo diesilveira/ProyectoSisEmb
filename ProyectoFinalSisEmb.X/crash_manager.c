@@ -22,10 +22,8 @@
 /* ************************************************************************** */
 #include <stdint.h>
 #include <stdbool.h>
-#include "../platform/serial_port_manager.h"
-#include "../platform/SIM808.h"
-#include "GPS.h"
-#include "../crash_manager.h"
+#include "WS2812.h"
+#include "framework/Analog/Analog.h"
 /* This section lists the other files that are included in this file.
  */
 
@@ -59,24 +57,18 @@
   @Remarks
     Any additional remarks
  */
-int global_data;
-static uint8_t p_dest[256];
-static bool isPdestSet = false;
+
+static uint16_t adc_value = 0;
+static uint8_t umbral_manejo_brusco;
+static uint8_t umbral_choque;
 
 
 /* ************************************************************************** */
 /* ************************************************************************** */
 // Section: Local Functions                                                   */
 /* ************************************************************************** */
-
 /* ************************************************************************** */
-void imprimirMenu(void) {
 
-    sendDataChar((char*) "\nMenú:\n");
-    sendDataChar((char*) "1- Setear umbrales\n");
-    sendDataChar((char*) "2- Pedir una trama\n");
-    sendDataChar((char*) "3- Descargar Logs\n");
-}
 /*  A brief description of a section can be given directly below the section
     banner.
  */
@@ -142,6 +134,7 @@ static int ExampleLocalFunction(int param1, int param2) {
  */
 
 // *****************************************************************************
+void prendeLeds(uint8_t adc);
 
 /** 
   @Function
@@ -154,83 +147,54 @@ static int ExampleLocalFunction(int param1, int param2) {
     Refer to the example_file.h interface header for function usage details.
  */
 
-
-void initializeMenu(void *params) {
-    //Seteamos valores iniciales a utilizar
-    static bool receivedData = false;
-    static uint8_t numBytes = 0;
-    static uint8_t buffer[64];
-
-    //Esperamos a recibir cualquier letra, una vez recibida pasamos 
-    //al siguiente estado e imprimimos la bienvenida.
-    while (true) {
-        numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
-        if (receivedData) {
-            imprimirMenu();
-            receivedData = false;
-            numBytes = 0;
-
-            numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
-            do {
-                numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
-            } while (!receivedData);
-
-            if (receivedData) {
-                switch (buffer[0]) {
-                    case '1':
-                        receivedData = false;
-                        while (!receivedData){
-                            setUmbral();
-                        }
-                        apagaLeds();
-                        
-                        break;
-                    case '2':;
-                        sendDataChar((char*) "llama al gps");
-                        
-                        while (!isPdestSet){
-                            sendDataChar((char*) "Esperando trama valida.\n");
-                        }
-                        sendDataChar((char*) "tiene una trama\n");
-                        GPSPosition_t p_pos;
-                        GPS_getPosition(&p_pos, p_dest);
-                        uint8_t p_linkDest[64];
-                        GPS_generateGoogleMaps(p_linkDest, p_pos);
-                        sendDataChar((char*) p_linkDest);
-
-
-                        break;
-                    case '3':
-                        //llama descargar los logs
-                        break;
-                    default:
-
-
-
-                        break;
-                }
-            }
+void setUmbral(void) {
+        if (adc_value < 128) {
+            prendeLeds(1);
+        } else if (adc_value < 256) {
+            prendeLeds(2);
+        } else if (adc_value < 384) {
+            prendeLeds(3);
+        } else if (adc_value < 512) {
+            prendeLeds(4);
+        } else if (adc_value < 640) {
+            prendeLeds(5);
+        } else if (adc_value < 768) {
+            prendeLeds(6);
+        } else if (adc_value < 896) {
+            prendeLeds(7);
+        } else {
+            prendeLeds(8);
         }
 
-    }
 }
 
-void generateTrama(void *params) {
-    uint8_t p_dest_local[110];
-    while (true) {
-        SIM808_getNMEA(p_dest_local);
-        while (!SIM808_validateNMEAFrame(p_dest_local)) {
-            SIM808_getNMEA(p_dest_local);
-        }
-
-        for (int i = 0; i < 98; i++) {
-            p_dest[i] = p_dest_local[i];
-        }
-        isPdestSet = true;
-    }
+void apagaLeds(void) {
+    ws2812_t leds[8];
+    WS2812_initializeLedArray(leds, 8);
+    WS2812_send(leds, 8);
 }
 
+void prendeLeds(uint8_t adc) {
+    ws2812_t leds[8];
+    WS2812_initializeLedArray(leds, 8);
+    int ledPrendido = 2;
+    int ledApagado = 4;
 
+    for (int i = 0; i < 8; i++) {
+        if (i < adc) {
+            WS2812_setLEDColor(leds, ledPrendido, i);
+        } else {
+            WS2812_setLEDColor(leds, ledApagado, i);
+        }
+    }
+    WS2812_send(leds, 8);
+}
+
+void getADC(void *params) {
+    while (true) {
+        adc_value = ANALOG_getResult();
+    }
+}
 
 /* *****************************************************************************
  End of File
