@@ -63,6 +63,9 @@ int global_data;
 static uint8_t p_dest[256];
 static bool isPdestSet = false;
 
+uint8_t levelBrusco = 0;
+uint8_t levelChoque = 0;
+
 
 /* ************************************************************************** */
 /* ************************************************************************** */
@@ -178,10 +181,23 @@ void initializeMenu(void *params) {
             if (receivedData) {
                 switch (buffer[0]) {
                     case '1':
+                        sendDataChar((char*) "Elija nivel de conduccion brusca.\n");
                         receivedData = false;
                         while (!receivedData){
-                            setUmbral();
+                            setUmbral(1);
+                            numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
                         }
+                        levelBrusco = getLevelValue();
+                        apagaLeds();
+                        
+                        sendDataChar((char*) "Elija nivel de choque.\n");
+                        receivedData = false;
+                        while (!receivedData){
+                            setUmbral(levelBrusco);
+                            numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
+                            
+                        }
+                        levelChoque = getLevelValue();
                         apagaLeds();
                         
                         break;

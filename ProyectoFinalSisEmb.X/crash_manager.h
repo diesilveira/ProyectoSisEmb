@@ -172,7 +172,7 @@ extern "C" {
 }
 #endif
 #endif /* _EXAMPLE_FILE_NAME_H */
-void setUmbral(void);
+void setUmbral(uint8_t number);
 void getADC(void *params);
 void apagaLeds(void);
 /* *****************************************************************************

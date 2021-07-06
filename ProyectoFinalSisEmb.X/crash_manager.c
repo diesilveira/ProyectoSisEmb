@@ -61,6 +61,7 @@
 static uint16_t adc_value = 0;
 static uint8_t umbral_manejo_brusco;
 static uint8_t umbral_choque;
+static uint8_t levelValue = 0;
 
 
 /* ************************************************************************** */
@@ -135,6 +136,7 @@ static int ExampleLocalFunction(int param1, int param2) {
 
 // *****************************************************************************
 void prendeLeds(uint8_t adc);
+uint8_t getLevelValue(void);
 
 /** 
   @Function
@@ -147,25 +149,38 @@ void prendeLeds(uint8_t adc);
     Refer to the example_file.h interface header for function usage details.
  */
 
-void setUmbral(void) {
-        if (adc_value < 128) {
+void setUmbral(uint8_t number) {
+    number++;
+        if (adc_value < 128 && number < 2) {
+            levelValue = 1;
             prendeLeds(1);
-        } else if (adc_value < 256) {
+        } else if (adc_value < 256 && number < 3) {
+            levelValue = 2;
             prendeLeds(2);
-        } else if (adc_value < 384) {
+        } else if (adc_value < 384 && number < 4) {
             prendeLeds(3);
-        } else if (adc_value < 512) {
+            levelValue = 3;
+        } else if (adc_value < 512 && number < 5) {
             prendeLeds(4);
-        } else if (adc_value < 640) {
+            levelValue = 4;
+        } else if (adc_value < 640 && number < 6) {
             prendeLeds(5);
-        } else if (adc_value < 768) {
+            levelValue = 5;
+        } else if (adc_value < 768 && number < 7) {
             prendeLeds(6);
-        } else if (adc_value < 896) {
+            levelValue = 6;
+        } else if (adc_value < 896 && number < 8) {
             prendeLeds(7);
+            levelValue = 7;
         } else {
             prendeLeds(8);
+            levelValue = 8;
         }
 
+}
+
+uint8_t getLevelValue(void){
+    return levelValue;
 }
 
 void apagaLeds(void) {
@@ -189,6 +204,8 @@ void prendeLeds(uint8_t adc) {
     }
     WS2812_send(leds, 8);
 }
+
+
 
 void getADC(void *params) {
     while (true) {
