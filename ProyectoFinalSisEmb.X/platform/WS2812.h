@@ -66,6 +66,7 @@ extern const ws2812_t RED;
 extern const ws2812_t GREEN;
 extern const ws2812_t BLUE;
 extern const ws2812_t OFF; 
+extern const ws2812_t YELLOW; 
 
 // *****************************************************************************
 // *****************************************************************************

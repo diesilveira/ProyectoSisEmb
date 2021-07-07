@@ -24,7 +24,7 @@
 /* Section: Included Files                                                    */
 /* ************************************************************************** */
 /* ************************************************************************** */
-
+#include "GPS.h"
 /* This section lists the other files that are included in this file.
  */
 
@@ -102,7 +102,7 @@ extern "C" {
      Millisecods es la hora actual del pic en milisegundos a partir de 
      
      */
-    typedef struct _logger_struct_t {
+    typedef struct{
         uint16_t id;
         uint16_t milliseconds;
         uint8_t patronManejo;

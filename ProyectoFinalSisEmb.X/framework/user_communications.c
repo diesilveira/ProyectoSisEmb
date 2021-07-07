@@ -74,8 +74,9 @@ uint8_t patronManejoActual = 2;
 
 TickType_t delayLogger = 10000;
 
-logger_struct_t logger[250];
+//logger_struct_t logger[250];
 
+static SemaphoreHandle_t xSemaphoreLeds;
 
 /* ************************************************************************** */
 /* ************************************************************************** */
@@ -191,7 +192,9 @@ void initializeMenu(void *params) {
             if (receivedData) {
                 switch (buffer[0]) {
                     case '1':
-                        sendDataChar((char*) "Elija nivel de conduccion brusca.\n");
+                        sendDataChar((char*) "Nivel de conduccion brusca.\n");
+                        sendDataChar((char*) "Use la ruedita para elegir.\n");
+                        sendDataChar((char*) "Luego envíe cualquier cosa por serial.\n");
                         receivedData = false;
                         while (!receivedData) {
                             setUmbral(1, 7);
@@ -199,17 +202,20 @@ void initializeMenu(void *params) {
                         }
                         levelBrusco = getLevelValue();
                         apagaLeds();
+                        sendDataChar((char*) "Nivel de conduccion Brusca seteado con exito.\n\n");
 
-                        sendDataChar((char*) "Elija nivel de choque.\n");
+                        sendDataChar((char*) "Nivel de choque.\n");
+                        sendDataChar((char*) "Use la ruedita para elegir.\n");                        
+                        sendDataChar((char*) "Luego envíe cualquier cosa por serial.\n");
                         receivedData = false;
                         while (!receivedData) {
                             setUmbral(levelBrusco, 8);
                             numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
-
                         }
                         levelChoque = getLevelValue();
                         apagaLeds();
-
+                        sendDataChar((char*) "Nivel de choque seteado con exito.\n");
+                        sendDataChar((char*) "Envíe cualquier cosa por serial para volver al menu principal.\n\n");
                         break;
                     case '2':;
                         sendDataChar((char*) "llama al gps");
@@ -231,97 +237,69 @@ void initializeMenu(void *params) {
                         break;
                     default:
 
-
-
                         break;
                 }
             }
         }
-
     }
 }
 
 void getAccelerometer(void *params) {
-    TickType_t xDelay = 166;
+    xSemaphoreLeds = xSemaphoreCreateBinary();
     float moduloAccel = 0;
+    TickType_t xDelay = 166;
     while (true) {
         while (!ACCEL_Mod(&moduloAccel)) {
         }
 
         if ((moduloAccel >= 3) && (moduloAccel < 5)) {
             patronManejoActual = 0;
-            
-            for (int i = 0; i <= 2; i++) {
-                prendeLedsTipoDeAlerta(0);
-                //        que prenda buzzer
-                vTaskDelay(xDelay);
-                apagaLeds();
-
-                //         apaga buzzer
-                vTaskDelay(xDelay);
-
+            if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
+                for (int i = 0; i <= 2; i++) {
+                    setLeds(5);
+                    //        que prenda buzzer
+                    vTaskDelay(xDelay);
+                    apagaLeds();
+                    //         apaga buzzer
+                    vTaskDelay(xDelay);
+                }
             }
-            //tu codigo aqui
+            xSemaphoreGive(xSemaphoreLeds);
+
         } else if (moduloAccel >= 5) {
             patronManejoActual = 1;
-            for (int i = 0; i <= 2; i++) {
-                prendeLedsTipoDeAlerta(1);
-                //        que prenda buzzer
-                vTaskDelay(xDelay);
-                apagaLeds();
-
-                //         apaga buzzer
-                vTaskDelay(xDelay);
-
+            if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
+                for (int i = 0; i <= 2; i++) {
+                    setLeds(1);
+                    //        que prenda buzzer
+                    vTaskDelay(xDelay);
+                    apagaLeds();
+                    //         apaga buzzer
+                    vTaskDelay(xDelay);
+                }
             }
-            //tu otro codigo aqui
+            xSemaphoreGive(xSemaphoreLeds);
+
         } else {
             patronManejoActual = 2;
-            //VERDE
+            if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
+                setLeds(3);
+            }
+            xSemaphoreGive(xSemaphoreLeds);
         }
     }
-
 }
-
-void logger(void *params) {
-    int idNumber = 0;
-    while (true) {
-        for (int i = 0; i < 250; i++) {
-            vTaskDelay(delayLogger);
-            logger[i].id = idNumber;
-            //            logger[i].milliseconds = RTCTIME
-            logger[i].patronManejo = patronManejoActual;
-
-        }
-
-
-
-
-
-    }
-
-}
-
-//void getAccelerometer(void *params) {
-//    Accel_t nueva;
-//    nueva.Accel_X = 0;
-//    nueva.Accel_Y = 0;
-//    nueva.Accel_Z = 0;
-//    while (1) {
-//        Accel_t nueva;
-//        bool accel = ACCEL_GetAccel(&nueva);
-//        while (!accel) {
-//            accel = ACCEL_GetAccel(&nueva);
-//        }
-//        if (nueva.Accel_X > 3 || nueva.Accel_Y > 3 || nueva.Accel_Z > 3) {
-//            LEDA_SetHigh();
-//            alerta(0);
-//        }
-//        if (nueva.Accel_X == 0 || nueva.Accel_Y == 0 || nueva.Accel_Z == 0) {
-//            LEDA_SetLow();
+//
+//void loggerFunction(void *params) {
+//    int idNumber = 0;
+//    while (true) {
+//        for (int i = 0; i < 250; i++) {
+//            vTaskDelay(delayLogger);
+//            logger[i].id = idNumber;
+//            //            logger[i].milliseconds = RTCTIME
+//            logger[i].patronManejo = patronManejoActual;
 //        }
 //    }
-//
 //}
 
 void generateTrama(void *params) {
@@ -338,8 +316,6 @@ void generateTrama(void *params) {
         isPdestSet = true;
     }
 }
-
-
 
 /* *****************************************************************************
  End of File

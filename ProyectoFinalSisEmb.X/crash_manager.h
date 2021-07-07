@@ -176,9 +176,9 @@ void setUmbral(uint8_t levelMin, uint8_t levelMax);
 void getADC(void *params);
 void apagaLeds(void);
 uint8_t getLevelValue(void);
-void prendeLedsTipoDeAlerta(uint8_t tipoDeAlerta);
-void alerta(uint8_t tipoDeAlerta);
-void prendeLeds(uint8_t adc);
+void setLeds(uint8_t tipoDeAlerta);
+void alerta(uint8_t tipoDeAlerta, SemaphoreHandle_t xSemaphoreLeds );
+void prendeLedsSetearUmbrales(uint8_t adc);
 /* *****************************************************************************
  End of File
  */

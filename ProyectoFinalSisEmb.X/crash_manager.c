@@ -27,6 +27,9 @@
 
 #include "freeRTOS/include/FreeRTOS.h"
 #include "freeRTOS/include/task.h"
+#include "FreeRTOSConfig.h"
+
+#include "freeRTOS/include/semphr.h"
 
 #include <unistd.h>
 /* This section lists the other files that are included in this file.
@@ -67,6 +70,10 @@ static uint16_t adc_value = 0;
 static uint8_t umbral_manejo_brusco;
 static uint8_t umbral_choque;
 static uint8_t levelValue = 0;
+
+
+
+
 
 
 /* ************************************************************************** */
@@ -140,7 +147,7 @@ static int ExampleLocalFunction(int param1, int param2) {
  */
 
 // *****************************************************************************
-void prendeLeds(uint8_t adc);
+void prendeLedsSetearUmbrales(uint8_t adc);
 uint8_t getLevelValue(void);
 
 /** 
@@ -156,35 +163,35 @@ uint8_t getLevelValue(void);
 
 void setUmbral(uint8_t levelMin, uint8_t levelMax) {
     levelMin++;
-        if (adc_value < 128 && levelMin < 2) {
-            levelValue = 1;
-            prendeLeds(1);
-        } else if ((adc_value < 256 && levelMin < 3) || levelMax == 2) {
-            levelValue = 2;
-            prendeLeds(2);
-        } else if ((adc_value < 384 && levelMin < 4) || levelMax == 3) {
-            prendeLeds(3);
-            levelValue = 3;
-        } else if ((adc_value < 512 && levelMin < 5) || levelMax == 4) {
-            prendeLeds(4);
-            levelValue = 4;
-        } else if ((adc_value < 640 && levelMin < 6) || levelMax == 5) {
-            prendeLeds(5);
-            levelValue = 5;
-        } else if ((adc_value < 768 && levelMin < 7) || levelMax == 6) {
-            prendeLeds(6);
-            levelValue = 6;
-        } else if ((adc_value < 896 && levelMin < 8) || levelMax == 7 ) {
-            prendeLeds(7);
-            levelValue = 7;
-        } else {
-            prendeLeds(8);
-            levelValue = 8;
-        }
+    if (adc_value < 128 && levelMin < 2) {
+        levelValue = 1;
+        prendeLedsSetearUmbrales(1);
+    } else if ((adc_value < 256 && levelMin < 3) || levelMax == 2) {
+        levelValue = 2;
+        prendeLedsSetearUmbrales(2);
+    } else if ((adc_value < 384 && levelMin < 4) || levelMax == 3) {
+        prendeLedsSetearUmbrales(3);
+        levelValue = 3;
+    } else if ((adc_value < 512 && levelMin < 5) || levelMax == 4) {
+        prendeLedsSetearUmbrales(4);
+        levelValue = 4;
+    } else if ((adc_value < 640 && levelMin < 6) || levelMax == 5) {
+        prendeLedsSetearUmbrales(5);
+        levelValue = 5;
+    } else if ((adc_value < 768 && levelMin < 7) || levelMax == 6) {
+        prendeLedsSetearUmbrales(6);
+        levelValue = 6;
+    } else if ((adc_value < 896 && levelMin < 8) || levelMax == 7) {
+        prendeLedsSetearUmbrales(7);
+        levelValue = 7;
+    } else {
+        prendeLedsSetearUmbrales(8);
+        levelValue = 8;
+    }
 
 }
 
-uint8_t getLevelValue(void){
+uint8_t getLevelValue(void) {
     return levelValue;
 }
 
@@ -194,44 +201,20 @@ void apagaLeds(void) {
     WS2812_send(leds, 8);
 }
 
-void alerta(uint8_t tipoDeAlerta){
-    TickType_t xDelay = 166;
-    for (int i=0 ; i <= 2 ; i++){
-        prendeLedsTipoDeAlerta(tipoDeAlerta);
-//        que prenda buzzer
-        vTaskDelay(xDelay);
-         apagaLeds();
-
-//         apaga buzzer
-        vTaskDelay(xDelay);
-        
-    }
-}
-
-
 /*
  Tipo de alerta corresponde a Amarila o Roja siendo estas 0 y 1 respectivamente.
  */
-void prendeLedsTipoDeAlerta(uint8_t tipoDeAlerta){
-    ws2812_t leds[8];
-    WS2812_initializeLedArray(leds, 8);
-    int ledAmarillo = 5;
-    int ledRojo = 1;
 
-    if (tipoDeAlerta == 0){
-        for (int i = 0; i < 8; i++) {
-            WS2812_setLEDColor(leds, ledAmarillo, i);
-        }
-    } else {
-        for (int i = 0; i < 8; i++) {
-            WS2812_setLEDColor(leds, ledRojo, i);
-        }
+void setLeds(uint8_t color) {
+    ws2812_t leds[8];
+    for (int i = 0; i < 8; i++) {
+        WS2812_setLEDColor(leds, color, i);
     }
+
     WS2812_send(leds, 8);
 }
 
-
-void prendeLeds(uint8_t adc) {
+void prendeLedsSetearUmbrales(uint8_t adc) {
     ws2812_t leds[8];
     WS2812_initializeLedArray(leds, 8);
     int ledPrendido = 2;
@@ -246,8 +229,6 @@ void prendeLeds(uint8_t adc) {
     }
     WS2812_send(leds, 8);
 }
-
-
 
 void getADC(void *params) {
     while (true) {
