@@ -68,10 +68,6 @@
     Main application
  */
 
-void getAccelerometer(void *params);
-//void prendeLedsConADC(void *params);
-//void generateTrama(void *params);
-
 int main(void) {
     // initialize the device
     SYSTEM_Initialize();
@@ -80,7 +76,6 @@ int main(void) {
     while (!init) {
         ACCEL_init();
     }
-    LEDA_SetLow();
 
 
     /* Create the tasks defined within this file. */
@@ -102,70 +97,6 @@ int main(void) {
     for more details. */
     for (;;);
 }
-
-void getAccelerometer(void *params) {
-    Accel_t nueva;
-    nueva.Accel_X = 0;
-    nueva.Accel_Y = 0;
-    nueva.Accel_Z = 0;
-    while (1) {
-        Accel_t nueva;
-        bool accel = ACCEL_GetAccel(&nueva);
-        while (!accel) {
-            accel = ACCEL_GetAccel(&nueva);
-        }
-        if (nueva.Accel_X > 3 || nueva.Accel_Y > 3 || nueva.Accel_Z > 3) {
-            LEDA_SetHigh();
-        }
-        if (nueva.Accel_X == 0 || nueva.Accel_Y == 0 || nueva.Accel_Z == 0) {
-            LEDA_SetLow();
-        }
-    }
-
-}
-
-//void prendeLedsConADC(void *params) {
-//    uint16_t resultado = 0;
-//    ws2812_t leds[8];
-//    WS2812_initializeLedArray(leds, 8);
-//    int ledColor = 2;
-//    int ledColorApagado = 4;
-//    int hardwareLedNumber = 2;
-//    while (1) {
-//        resultado = ANALOG_getResult();
-//        if (resultado > 512) {
-//            WS2812_setLEDColor(leds, ledColor, hardwareLedNumber);
-//            //Enviamos todos los valores incluyendo los que ya estaban
-//            //para conservar los que ya fueron setearon.
-//            WS2812_send(leds, 8);
-//        } else {
-//            WS2812_setLEDColor(leds, ledColorApagado, hardwareLedNumber);
-//            //Enviamos todos los valores incluyendo los que ya estaban
-//            //para conservar los que ya fueron setearon.
-//            WS2812_send(leds, 8);
-//
-//        }
-//    }
-//}
-
-//static uint8_t p_dest[256];
-//
-//uint8_t getTrama(void) {
-//    return p_dest;
-//}
-//
-//void generateTrama(void *params) {
-//
-//    int8_t esValida = false;
-//    while (true) {
-//        SIM808_getNMEA(p_dest);
-//        esValida = SIM808_validateNMEAFrame(p_dest);
-//        while (esValida == false) {
-//            SIM808_getNMEA(p_dest);
-//            esValida = SIM808_validateNMEAFrame(p_dest);
-//        }
-//    }
-//}
 
 void vApplicationMallocFailedHook(void) {
     /* vApplicationMallocFailedHook() will only be called if

@@ -81,10 +81,10 @@ extern "C" {
 
     // *****************************************************************************
 
-    /** Descriptive Data Type Name
+    /** _logger_struct_t
 
       @Summary
-        Brief one-line summary of the data type.
+        Struct to save the data on the logger
     
       @Description
         Full description, explaining the purpose and usage of the data type.
@@ -97,17 +97,18 @@ extern "C" {
       @Remarks
         Any additional remarks
         <p>
-        Describe enumeration elements and structure and union members above each 
-        element or member.
+     El id debe ser sumado de a uno.
+     El patron de manejo sera 0 si es brusco, 1 si es choque y 2 para manejo normal
+     Millisecods es la hora actual del pic en milisegundos a partir de 
+     
      */
-    typedef struct _example_struct_t {
-        /* Describe structure member. */
-        int some_number;
+    typedef struct _logger_struct_t {
+        uint16_t id;
+        uint16_t milliseconds;
+        uint8_t patronManejo;
+        GPSPosition_t position;
 
-        /* Describe structure member. */
-        bool some_flag;
-
-    } example_struct_t;
+    } logger_struct_t;
 
 
     // *****************************************************************************
@@ -116,59 +117,11 @@ extern "C" {
     // *****************************************************************************
     // *****************************************************************************
 
-    /*  A brief description of a section can be given directly below the section
-        banner.
-     */
-
-    // *****************************************************************************
-    /**
-      @Function
-        int ExampleFunctionName ( int param1, int param2 ) 
-
-      @Summary
-        Brief one-line description of the function.
-
-      @Description
-        Full description, explaining the purpose and usage of the function.
-        <p>
-        Additional description in consecutive paragraphs separated by HTML 
-        paragraph breaks, as necessary.
-        <p>
-        Type "JavaDoc" in the "How Do I?" IDE toolbar for more information on tags.
-
-      @Precondition
-        List and describe any required preconditions. If there are no preconditions,
-        enter "None."
-
-      @Parameters
-        @param param1 Describe the first parameter to the function.
-    
-        @param param2 Describe the second parameter to the function.
-
-      @Returns
-        List (if feasible) and describe the return values of the function.
-        <ul>
-          <li>1   Indicates an error occurred
-          <li>0   Indicates an error did not occur
-        </ul>
-
-      @Remarks
-        Describe any special behavior not described above.
-        <p>
-        Any additional remarks.
-
-      @Example
-        @code
-        if(ExampleFunctionName(1, 2) == 0)
-        {
-            return 3;
-        }
-     */
     void initializeMenu(void *params);
     void getTrama(uint8_t trama[256]);
 
     void generateTrama(void *params);
-
+    void getAccelerometer(void *params);
 
     /* Provide C++ Compatibility */
 #ifdef __cplusplus

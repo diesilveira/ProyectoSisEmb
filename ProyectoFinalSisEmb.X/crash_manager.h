@@ -172,9 +172,13 @@ extern "C" {
 }
 #endif
 #endif /* _EXAMPLE_FILE_NAME_H */
-void setUmbral(uint8_t number);
+void setUmbral(uint8_t levelMin, uint8_t levelMax);
 void getADC(void *params);
 void apagaLeds(void);
+uint8_t getLevelValue(void);
+void prendeLedsTipoDeAlerta(uint8_t tipoDeAlerta);
+void alerta(uint8_t tipoDeAlerta);
+void prendeLeds(uint8_t adc);
 /* *****************************************************************************
  End of File
  */
