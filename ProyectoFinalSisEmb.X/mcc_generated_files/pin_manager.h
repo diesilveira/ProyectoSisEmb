@@ -602,6 +602,188 @@ inline static void GPRS_STATUS_SetValue(bool value)
 #define GPRS_STATUS_SetDigitalOutput()   ( TRISACLR = (1 << 11) )
 /**
   @Summary
+    Sets the GPIO pin, RA12, high using LATA12.
+
+  @Description
+    Sets the GPIO pin, RA12, high using LATA12.
+
+  @Preconditions
+    The RA12 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RA12 high (1)
+    BUZ_CTRL_SetHigh();
+    </code>
+
+*/
+#define BUZ_CTRL_SetHigh()          ( LATASET = (1 << 12) )
+/**
+  @Summary
+    Sets the GPIO pin, RA12, low using LATA12.
+
+  @Description
+    Sets the GPIO pin, RA12, low using LATA12.
+
+  @Preconditions
+    The RA12 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RA12 low (0)
+    BUZ_CTRL_SetLow();
+    </code>
+
+*/
+#define BUZ_CTRL_SetLow()           ( LATACLR = (1 << 12) )
+
+/**
+  @Summary
+    Sets a value to the GPIO pin.
+
+  @Description
+    Sets or Resets the GPIO pin, RA12, low or high using LATA12.
+
+  @Preconditions
+    The RA12 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    bool value; : value to be set to the GPIO pin.
+
+  @Example
+    <code>
+    // Set RA12 to low.
+    BUZ_CTRL_SetValue(false);
+    </code>
+
+*/
+inline static void BUZ_CTRL_SetValue(bool value)
+{
+  if(value)
+  {
+    BUZ_CTRL_SetHigh();
+  }
+  else
+  {
+    BUZ_CTRL_SetLow();
+  }
+}
+
+/**
+  @Summary
+    Toggles the GPIO pin, RA12, using LATA12.
+
+  @Description
+    Toggles the GPIO pin, RA12, using LATA12.
+
+  @Preconditions
+    The RA12 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Toggle RA12
+    BUZ_CTRL_Toggle();
+    </code>
+
+*/
+#define BUZ_CTRL_Toggle()           ( LATAINV = (1 << 12) )
+/**
+  @Summary
+    Reads the value of the GPIO pin, RA12.
+
+  @Description
+    Reads the value of the GPIO pin, RA12.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    uint16_t portValue;
+
+    // Read RA12
+    postValue = BUZ_CTRL_GetValue();
+    </code>
+
+*/
+#define BUZ_CTRL_GetValue()         PORTAbits.RA12
+/**
+  @Summary
+    Configures the GPIO pin, RA12, as an input.
+
+  @Description
+    Configures the GPIO pin, RA12, as an input.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RA12 as an input
+    BUZ_CTRL_SetDigitalInput();
+    </code>
+
+*/
+#define BUZ_CTRL_SetDigitalInput()   ( TRISASET = (1 << 12) )
+/**
+  @Summary
+    Configures the GPIO pin, RA12, as an output.
+
+  @Description
+    Configures the GPIO pin, RA12, as an output.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RA12 as an output
+    BUZ_CTRL_SetDigitalOutput();
+    </code>
+
+*/
+#define BUZ_CTRL_SetDigitalOutput()   ( TRISACLR = (1 << 12) )
+/**
+  @Summary
     Sets the GPIO pin, RA13, high using LATA13.
 
   @Description
@@ -619,11 +801,11 @@ inline static void GPRS_STATUS_SetValue(bool value)
   @Example
     <code>
     // Set RA13 high (1)
-    BTN2_SetHigh();
+    BTN1_SetHigh();
     </code>
 
 */
-#define BTN2_SetHigh()          ( LATASET = (1 << 13) )
+#define BTN1_SetHigh()          ( LATASET = (1 << 13) )
 /**
   @Summary
     Sets the GPIO pin, RA13, low using LATA13.
@@ -643,11 +825,11 @@ inline static void GPRS_STATUS_SetValue(bool value)
   @Example
     <code>
     // Set RA13 low (0)
-    BTN2_SetLow();
+    BTN1_SetLow();
     </code>
 
 */
-#define BTN2_SetLow()           ( LATACLR = (1 << 13) )
+#define BTN1_SetLow()           ( LATACLR = (1 << 13) )
 
 /**
   @Summary
@@ -668,19 +850,19 @@ inline static void GPRS_STATUS_SetValue(bool value)
   @Example
     <code>
     // Set RA13 to low.
-    BTN2_SetValue(false);
+    BTN1_SetValue(false);
     </code>
 
 */
-inline static void BTN2_SetValue(bool value)
+inline static void BTN1_SetValue(bool value)
 {
   if(value)
   {
-    BTN2_SetHigh();
+    BTN1_SetHigh();
   }
   else
   {
-    BTN2_SetLow();
+    BTN1_SetLow();
   }
 }
 
@@ -703,11 +885,11 @@ inline static void BTN2_SetValue(bool value)
   @Example
     <code>
     // Toggle RA13
-    BTN2_Toggle();
+    BTN1_Toggle();
     </code>
 
 */
-#define BTN2_Toggle()           ( LATAINV = (1 << 13) )
+#define BTN1_Toggle()           ( LATAINV = (1 << 13) )
 /**
   @Summary
     Reads the value of the GPIO pin, RA13.
@@ -729,11 +911,11 @@ inline static void BTN2_SetValue(bool value)
     uint16_t portValue;
 
     // Read RA13
-    postValue = BTN2_GetValue();
+    postValue = BTN1_GetValue();
     </code>
 
 */
-#define BTN2_GetValue()         PORTAbits.RA13
+#define BTN1_GetValue()         PORTAbits.RA13
 /**
   @Summary
     Configures the GPIO pin, RA13, as an input.
@@ -753,11 +935,11 @@ inline static void BTN2_SetValue(bool value)
   @Example
     <code>
     // Sets the RA13 as an input
-    BTN2_SetDigitalInput();
+    BTN1_SetDigitalInput();
     </code>
 
 */
-#define BTN2_SetDigitalInput()   ( TRISASET = (1 << 13) )
+#define BTN1_SetDigitalInput()   ( TRISASET = (1 << 13) )
 /**
   @Summary
     Configures the GPIO pin, RA13, as an output.
@@ -777,11 +959,11 @@ inline static void BTN2_SetValue(bool value)
   @Example
     <code>
     // Sets the RA13 as an output
-    BTN2_SetDigitalOutput();
+    BTN1_SetDigitalOutput();
     </code>
 
 */
-#define BTN2_SetDigitalOutput()   ( TRISACLR = (1 << 13) )
+#define BTN1_SetDigitalOutput()   ( TRISACLR = (1 << 13) )
 /**
   @Summary
     Sets the GPIO pin, RA7, high using LATA7.
@@ -1165,11 +1347,11 @@ inline static void LEDB_SetValue(bool value)
   @Example
     <code>
     // Set RB15 high (1)
-    BTN_S2_SetHigh();
+    BTN2_SetHigh();
     </code>
 
 */
-#define BTN_S2_SetHigh()          ( LATBSET = (1 << 15) )
+#define BTN2_SetHigh()          ( LATBSET = (1 << 15) )
 /**
   @Summary
     Sets the GPIO pin, RB15, low using LATB15.
@@ -1189,11 +1371,11 @@ inline static void LEDB_SetValue(bool value)
   @Example
     <code>
     // Set RB15 low (0)
-    BTN_S2_SetLow();
+    BTN2_SetLow();
     </code>
 
 */
-#define BTN_S2_SetLow()           ( LATBCLR = (1 << 15) )
+#define BTN2_SetLow()           ( LATBCLR = (1 << 15) )
 
 /**
   @Summary
@@ -1214,19 +1396,19 @@ inline static void LEDB_SetValue(bool value)
   @Example
     <code>
     // Set RB15 to low.
-    BTN_S2_SetValue(false);
+    BTN2_SetValue(false);
     </code>
 
 */
-inline static void BTN_S2_SetValue(bool value)
+inline static void BTN2_SetValue(bool value)
 {
   if(value)
   {
-    BTN_S2_SetHigh();
+    BTN2_SetHigh();
   }
   else
   {
-    BTN_S2_SetLow();
+    BTN2_SetLow();
   }
 }
 
@@ -1249,11 +1431,11 @@ inline static void BTN_S2_SetValue(bool value)
   @Example
     <code>
     // Toggle RB15
-    BTN_S2_Toggle();
+    BTN2_Toggle();
     </code>
 
 */
-#define BTN_S2_Toggle()           ( LATBINV = (1 << 15) )
+#define BTN2_Toggle()           ( LATBINV = (1 << 15) )
 /**
   @Summary
     Reads the value of the GPIO pin, RB15.
@@ -1275,11 +1457,11 @@ inline static void BTN_S2_SetValue(bool value)
     uint16_t portValue;
 
     // Read RB15
-    postValue = BTN_S2_GetValue();
+    postValue = BTN2_GetValue();
     </code>
 
 */
-#define BTN_S2_GetValue()         PORTBbits.RB15
+#define BTN2_GetValue()         PORTBbits.RB15
 /**
   @Summary
     Configures the GPIO pin, RB15, as an input.
@@ -1299,11 +1481,11 @@ inline static void BTN_S2_SetValue(bool value)
   @Example
     <code>
     // Sets the RB15 as an input
-    BTN_S2_SetDigitalInput();
+    BTN2_SetDigitalInput();
     </code>
 
 */
-#define BTN_S2_SetDigitalInput()   ( TRISBSET = (1 << 15) )
+#define BTN2_SetDigitalInput()   ( TRISBSET = (1 << 15) )
 /**
   @Summary
     Configures the GPIO pin, RB15, as an output.
@@ -1323,11 +1505,11 @@ inline static void BTN_S2_SetValue(bool value)
   @Example
     <code>
     // Sets the RB15 as an output
-    BTN_S2_SetDigitalOutput();
+    BTN2_SetDigitalOutput();
     </code>
 
 */
-#define BTN_S2_SetDigitalOutput()   ( TRISBCLR = (1 << 15) )
+#define BTN2_SetDigitalOutput()   ( TRISBCLR = (1 << 15) )
 /**
   @Summary
     Sets the GPIO pin, RB7, high using LATB7.
@@ -2639,6 +2821,27 @@ void PIN_MANAGER_Initialize (void);
 
 /**
   @Summary
+    Callback for BTN1 Pin.
+
+  @Description
+    This routine is callback for BTN1 Pin
+
+  @Param
+    None.
+
+  @Returns
+    None
+ 
+ 
+  @Example 
+    <code>
+        BTN1_SetInterruptHandler(&BTN1_CallBack);
+    </code>
+*/
+void BTN1_CallBack(void);
+
+/**
+  @Summary
     Callback for ACC_INT1 Pin.
 
   @Description
@@ -2658,6 +2861,67 @@ void PIN_MANAGER_Initialize (void);
 */
 void ACC_INT1_CallBack(void);
 
+/**
+  @Summary
+    Callback for BTN2 Pin.
+
+  @Description
+    This routine is callback for BTN2 Pin
+
+  @Param
+    None.
+
+  @Returns
+    None
+ 
+ 
+  @Example 
+    <code>
+        BTN2_SetInterruptHandler(&BTN2_CallBack);
+    </code>
+*/
+void BTN2_CallBack(void);
+
+
+/**
+  @Summary
+    Assigns a function pointer with a callback address.
+
+  @Description
+    This routine assigns a function pointer with a callback address.
+
+  @Param
+    Address of the callback routine.
+
+  @Returns
+    None
+ 
+  @Example 
+    <code>
+        BTN1_SetInterruptHandler(&BTN1_CallBack);
+    </code>
+*/
+void BTN1_SetInterruptHandler(void (* InterruptHandler)(void));
+
+/**
+  @Summary
+    Assigns a function pointer with a callback address.
+
+  @Description
+    This routine assigns a function pointer with a callback address.
+
+  @Param
+    Address of the callback routine.
+
+  @Returns
+    None
+ 
+  @Example 
+    <code>
+        BTN1_SetIOCInterruptHandler(&BTN1_CallBack);
+    </code>
+*/
+void __attribute__((deprecated("\nThis will be removed in future MCC releases. \nUse BTN1_SetInterruptHandler instead."))) BTN1_SetIOCInterruptHandler(void *handler);
 
 /**
   @Summary
@@ -2698,6 +2962,46 @@ void ACC_INT1_SetInterruptHandler(void (* InterruptHandler)(void));
     </code>
 */
 void __attribute__((deprecated("\nThis will be removed in future MCC releases. \nUse ACC_INT1_SetInterruptHandler instead."))) ACC_INT1_SetIOCInterruptHandler(void *handler);
+
+/**
+  @Summary
+    Assigns a function pointer with a callback address.
+
+  @Description
+    This routine assigns a function pointer with a callback address.
+
+  @Param
+    Address of the callback routine.
+
+  @Returns
+    None
+ 
+  @Example 
+    <code>
+        BTN2_SetInterruptHandler(&BTN2_CallBack);
+    </code>
+*/
+void BTN2_SetInterruptHandler(void (* InterruptHandler)(void));
+
+/**
+  @Summary
+    Assigns a function pointer with a callback address.
+
+  @Description
+    This routine assigns a function pointer with a callback address.
+
+  @Param
+    Address of the callback routine.
+
+  @Returns
+    None
+ 
+  @Example 
+    <code>
+        BTN2_SetIOCInterruptHandler(&BTN2_CallBack);
+    </code>
+*/
+void __attribute__((deprecated("\nThis will be removed in future MCC releases. \nUse BTN2_SetInterruptHandler instead."))) BTN2_SetIOCInterruptHandler(void *handler);
 
 
 #endif

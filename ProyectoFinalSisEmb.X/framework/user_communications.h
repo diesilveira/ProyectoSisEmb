@@ -117,11 +117,13 @@ extern "C" {
     // *****************************************************************************
     // *****************************************************************************
 
-    void initializeMenu(void *params);
+    void initializeMenu(void);
     void getTrama(uint8_t trama[256]);
 
     void generateTrama(void *params);
     void getAccelerometer(void *params);
+    
+//    void tareaPrincipal(void *params);
 
     /* Provide C++ Compatibility */
 #ifdef __cplusplus

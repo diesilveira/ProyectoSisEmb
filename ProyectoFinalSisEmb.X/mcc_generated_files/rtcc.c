@@ -74,9 +74,9 @@ void RTCC_Initialize(void)
      
    if(!RTCCTimeInitialized())
    {
-       // set 2020-05-12 15-08-29
-       RTCDATE = 0x20051202; // Year/Month/Date/Wday
-       RTCTIME = 0x15082900; //  hours/minutes/seconds
+       // set 2021-01-01 00-00-00
+       RTCDATE = 0x21010105; // Year/Month/Date/Wday
+       RTCTIME = 0x0; //  hours/minutes/seconds
        
    }
        // ON enabled; OUTSEL Alarm Event; WRLOCK disabled; AMASK Every Half Second; ALMRPT 0; RTCOE disabled; CHIME disabled; ALRMEN disabled; 

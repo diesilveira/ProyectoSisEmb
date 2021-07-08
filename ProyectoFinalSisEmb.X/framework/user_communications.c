@@ -1,25 +1,7 @@
-/* ************************************************************************** */
-/** Descriptive File Name
 
-  @Company
-    Company Name
-
-  @File Name
-    filename.c
-
-  @Summary
-    Brief description of the file.
-
-  @Description
-    Describe the purpose of this file.
- */
-/* ************************************************************************** */
-
-/* ************************************************************************** */
-/* ************************************************************************** */
 /* Section: Included Files                                                    */
-/* ************************************************************************** */
-/* ************************************************************************** */
+
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "../platform/serial_port_manager.h"
@@ -29,41 +11,12 @@
 #include "../mcc_generated_files/pin_manager.h"
 #include "Accelerometer/Accelerometer.h"
 #include "user_communications.h"
+#include "../platform/buttons.h"
 
 /* This section lists the other files that are included in this file.
- */
 
-/* TODO:  Include other files here if needed. */
-
-
-/* ************************************************************************** */
-/* ************************************************************************** */
 /* Section: File Scope or Global Data                                         */
-/* ************************************************************************** */
-/* ************************************************************************** */
 
-/*  A brief description of a section can be given directly below the section
-    banner.
- */
-
-/* ************************************************************************** */
-/** Descriptive Data Item Name
-
-  @Summary
-    Brief one-line summary of the data item.
-    
-  @Description
-    Full description, explaining the purpose and usage of data item.
-    <p>
-    Additional description in consecutive paragraphs separated by HTML 
-    paragraph breaks, as necessary.
-    <p>
-    Type "JavaDoc" in the "How Do I?" IDE toolbar for more information on tags.
-    
-  @Remarks
-    Any additional remarks
- */
-int global_data;
 static uint8_t p_dest[256];
 static bool isPdestSet = false;
 
@@ -77,13 +30,11 @@ TickType_t delayLogger = 10000;
 //logger_struct_t logger[250];
 
 static SemaphoreHandle_t xSemaphoreLeds;
+static SemaphoreHandle_t xSemaphoreDeEjecucion;
 
-/* ************************************************************************** */
-/* ************************************************************************** */
+
 // Section: Local Functions                                                   */
-/* ************************************************************************** */
 
-/* ************************************************************************** */
 void imprimirMenu(void) {
 
     sendDataChar((char*) "\nMenú:\n");
@@ -91,93 +42,21 @@ void imprimirMenu(void) {
     sendDataChar((char*) "2- Pedir una trama\n");
     sendDataChar((char*) "3- Descargar Logs\n");
 }
-/*  A brief description of a section can be given directly below the section
-    banner.
- */
-
-/* ************************************************************************** */
-
-/** 
-  @Function
-    int ExampleLocalFunctionName ( int param1, int param2 ) 
-
-  @Summary
-    Brief one-line description of the function.
-
-  @Description
-    Full description, explaining the purpose and usage of the function.
-    <p>
-    Additional description in consecutive paragraphs separated by HTML 
-    paragraph breaks, as necessary.
-    <p>
-    Type "JavaDoc" in the "How Do I?" IDE toolbar for more information on tags.
-
-  @Precondition
-    List and describe any required preconditions. If there are no preconditions,
-    enter "None."
-
-  @Parameters
-    @param param1 Describe the first parameter to the function.
-    
-    @param param2 Describe the second parameter to the function.
-
-  @Returns
-    List (if feasible) and describe the return values of the function.
-    <ul>
-      <li>1   Indicates an error occurred
-      <li>0   Indicates an error did not occur
-    </ul>
-
-  @Remarks
-    Describe any special behavior not described above.
-    <p>
-    Any additional remarks.
-
-  @Example
-    @code
-    if(ExampleFunctionName(1, 2) == 0)
-    {
-        return 3;
-    }
- */
-static int ExampleLocalFunction(int param1, int param2) {
-    return 0;
-}
 
 
-/* ************************************************************************** */
-/* ************************************************************************** */
 // Section: Interface Functions                                               */
-/* ************************************************************************** */
-/* ************************************************************************** */
 
-/*  A brief description of a section can be given directly below the section
-    banner.
- */
-
-// *****************************************************************************
-
-/** 
-  @Function
-    int ExampleInterfaceFunctionName ( int param1, int param2 ) 
-
-  @Summary
-    Brief one-line description of the function.
-
-  @Remarks
-    Refer to the example_file.h interface header for function usage details.
- */
-
-
-void initializeMenu(void *params) {
+void initializeMenu(void) {
     //Seteamos valores iniciales a utilizar
     static bool receivedData = false;
     static uint8_t numBytes = 0;
     static uint8_t buffer[64];
 
-    //Esperamos a recibir cualquier letra, una vez recibida pasamos 
-    //al siguiente estado e imprimimos la bienvenida.
-    while (true) {
+    bool isFinish = false;
+
+    while (!isFinish) {
+        //Esperamos a recibir cualquier letra, una vez recibida pasamos 
+        //al siguiente estado e imprimimos la bienvenida.
         numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
         if (receivedData) {
             imprimirMenu();
@@ -205,7 +84,7 @@ void initializeMenu(void *params) {
                         sendDataChar((char*) "Nivel de conduccion Brusca seteado con exito.\n\n");
 
                         sendDataChar((char*) "Nivel de choque.\n");
-                        sendDataChar((char*) "Use la ruedita para elegir.\n");                        
+                        sendDataChar((char*) "Use la ruedita para elegir.\n");
                         sendDataChar((char*) "Luego envíe cualquier cosa por serial.\n");
                         receivedData = false;
                         while (!receivedData) {
@@ -216,6 +95,7 @@ void initializeMenu(void *params) {
                         apagaLeds();
                         sendDataChar((char*) "Nivel de choque seteado con exito.\n");
                         sendDataChar((char*) "Envíe cualquier cosa por serial para volver al menu principal.\n\n");
+                        isFinish = true;
                         break;
                     case '2':;
                         sendDataChar((char*) "llama al gps");
@@ -229,11 +109,11 @@ void initializeMenu(void *params) {
                         uint8_t p_linkDest[64];
                         GPS_generateGoogleMaps(p_linkDest, p_pos);
                         sendDataChar((char*) p_linkDest);
-
-
+                        isFinish = true;
                         break;
                     case '3':
                         //llama descargar los logs
+                        isFinish = true;
                         break;
                     default:
 
@@ -246,49 +126,83 @@ void initializeMenu(void *params) {
 
 void getAccelerometer(void *params) {
     xSemaphoreLeds = xSemaphoreCreateBinary();
+    xSemaphoreGive(xSemaphoreLeds);
     float moduloAccel = 0;
     TickType_t xDelay = 166;
     while (true) {
-        while (!ACCEL_Mod(&moduloAccel)) {
-        }
-
-        if ((moduloAccel >= 3) && (moduloAccel < 5)) {
-            patronManejoActual = 0;
-            if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
-                for (int i = 0; i <= 2; i++) {
-                    setLeds(5);
-                    //        que prenda buzzer
-                    vTaskDelay(xDelay);
-                    apagaLeds();
-                    //         apaga buzzer
-                    vTaskDelay(xDelay);
-                }
-            }
-            xSemaphoreGive(xSemaphoreLeds);
-
-        } else if (moduloAccel >= 5) {
-            patronManejoActual = 1;
-            if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
-                for (int i = 0; i <= 2; i++) {
-                    setLeds(1);
-                    //        que prenda buzzer
-                    vTaskDelay(xDelay);
-                    apagaLeds();
-                    //         apaga buzzer
-                    vTaskDelay(xDelay);
-                }
-            }
-            xSemaphoreGive(xSemaphoreLeds);
-
+        if (BTN2_GetValue()) {
+            apagaLeds();
+            initializeMenu();
         } else {
-            patronManejoActual = 2;
-            if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
-                setLeds(3);
+
+            while (!ACCEL_Mod(&moduloAccel)) {
             }
-            xSemaphoreGive(xSemaphoreLeds);
+
+            if ((moduloAccel >= 3) && (moduloAccel < 5)) {
+                patronManejoActual = 0;
+                if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
+                    for (int i = 0; i <= 2; i++) {
+                        setLeds(5);
+                        //        que prenda buzzer
+                        vTaskDelay(xDelay);
+                        apagaLeds();
+                        //         apaga buzzer
+                        vTaskDelay(xDelay);
+                    }
+                    xSemaphoreGive(xSemaphoreLeds);
+                }
+
+
+            } else if (moduloAccel >= 5) {
+                patronManejoActual = 1;
+                if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
+                    for (int i = 0; i <= 2; i++) {
+                        setLeds(1);
+                        //        que prenda buzzer
+                        vTaskDelay(xDelay);
+                        apagaLeds();
+                        //         apaga buzzer
+                        vTaskDelay(xDelay);
+                    }
+                    xSemaphoreGive(xSemaphoreLeds);
+                }
+
+
+            } else {
+                patronManejoActual = 2;
+                if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
+                    setLeds(3);
+                    xSemaphoreGive(xSemaphoreLeds);
+                }
+
+            }
         }
     }
 }
+
+//void tareaPrincipal(void *params) {
+//    //    xSemaphoreDeEjecucion = xSemaphoreCreateBinary();
+//    //    xSemaphoreGive(xSemaphoreDeEjecucion);
+//    // if boton S2 tomar semaforo y llamar a funcion del menu
+//    //else llamar a get accelerometer
+//    while (true) {
+//        if (!BTN2_GetValue()) {
+//            //            if (xSemaphoreTake(xSemaphoreDeEjecucion, 0) == pdTRUE) {
+//            getAccelerometer();
+//            //            xSemaphoreGive(xSemaphoreDeEjecucion);
+//            //            }
+//
+//        } else {
+//            //            if (xSemaphoreTake(xSemaphoreDeEjecucion, 0) == pdTRUE) {
+//            apagaLeds();
+//            initializeMenu();
+//            //                xSemaphoreGive(xSemaphoreDeEjecucion);
+//            //            }
+//        }
+//    }
+//}
+
+
 //
 //void loggerFunction(void *params) {
 //    int idNumber = 0;
