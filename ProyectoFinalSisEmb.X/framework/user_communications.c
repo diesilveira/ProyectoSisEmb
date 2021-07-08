@@ -30,9 +30,13 @@ uint8_t patronManejoActual = 2;
 TickType_t delayLogger = 10000;
 
 //logger_struct_t logger[250];
+static bool receivedData = false;
+static uint8_t numBytes = 0;
+static uint8_t buffer[1];
+
+static bool isFinish = false;
 
 static SemaphoreHandle_t xSemaphoreLeds;
-static SemaphoreHandle_t xSemaphoreP_Dest;
 
 // Section: Local Functions                                                   */
 
@@ -45,11 +49,10 @@ static void imprimirMenu(void) {
 
 void mainMenu(void) {
     //Seteamos valores iniciales a utilizar
-    static bool receivedData = false;
-    static uint8_t numBytes = 0;
-    static uint8_t buffer[64];
+    receivedData = false;
+    numBytes = 0;
 
-    static bool isFinish = false;
+    isFinish = false;
 
     while (!isFinish) {
         //Esperamos a recibir cualquier letra, una vez recibida pasamos 
@@ -97,11 +100,17 @@ void mainMenu(void) {
                     sendDataChar((char*) "tiene una trama\n");
                     GPSPosition_t p_pos;
                     GPS_getPosition(&p_pos, p_dest);
-                    uint8_t p_linkDest[64];
+                    static uint8_t p_linkDest[64];
                     GPS_generateGoogleMaps(p_linkDest, p_pos);
                     sendDataChar((char*) p_linkDest);
+                    sendDataChar((char*) "\n");
+                    static char buffer[64];
+                    
+                    unixTo(getUnixTime(), buffer);
+                    sendDataChar((char*) buffer);
+                    
                     isFinish = true;
-                    sendDataChar((char*) "TERMINE\n");
+
                     break;
                 case '3':
                     //llama descargar los logs
@@ -127,7 +136,7 @@ void mainComunicationTask(void *params) {
             apagaLeds();
             imprimirMenu();
             mainMenu();
-            sendDataChar((char*) "VOLVI\n");
+            sendDataChar((char*) "\nPresiona S2 para volver al Menú. GRACIAS!!\n");
         }
 
         while (!ACCEL_Mod(&moduloAccel)) {
@@ -222,12 +231,12 @@ void generateTrama(void *params) {
             p_dest[i] = p_dest_local[i];
         }
 
-//        if (!isPdestSet) {
-//            struct tm timeToSet = {0};
-//            GPS_getUTC(&timeToSet, p_dest_local);
-//            //Manual de usuario aclarar que va en UTC, no en hora Uruguay
-//            RTCC_TimeSet(&timeToSet);
-//        }
+        if (!isPdestSet) {
+            struct tm timeToSet = {0};
+            GPS_getUTC(&timeToSet, p_dest_local);
+            //Manual de usuario aclarar que va en UTC, no en hora Uruguay
+            RTCC_TimeSet(&timeToSet);
+        }
 
         isPdestSet = true;
     }

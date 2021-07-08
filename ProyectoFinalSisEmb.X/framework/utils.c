@@ -33,6 +33,6 @@ void unixTo(uint32_t epoch, char *buffer) {
     // a un string legible
     struct tm tm_info;
     memcpy(&tm_info, gmtime(&epoch), sizeof (struct tm));
-    strftime(buffer, sizeof(buffer), "%a %Y-%m-%d %H:%M:%S %Z", &tm_info);
+    strftime(buffer, 80, "%a %Y-%m-%d %H:%M:%S", &tm_info);
 
 }
