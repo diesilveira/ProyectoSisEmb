@@ -53,6 +53,7 @@
       <itemPath>framework/GPS.h</itemPath>
       <itemPath>crash_manager.h</itemPath>
       <itemPath>platform/buttons.h</itemPath>
+      <itemPath>framework/utils.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -103,6 +104,7 @@
       <itemPath>framework/GPS.c</itemPath>
       <itemPath>crash_manager.c</itemPath>
       <itemPath>platform/buttons.c</itemPath>
+      <itemPath>framework/utils.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -248,7 +250,7 @@
         <property key="report-memory-usage" value="false"/>
         <property key="serial-length" value=""/>
         <property key="serial-origin" value=""/>
-        <property key="stack-size" value=""/>
+        <property key="stack-size" value="0"/>
         <property key="symbol-stripping" value=""/>
         <property key="trace-symbols" value=""/>
         <property key="warn-section-align" value="false"/>
