@@ -64,6 +64,7 @@
 #include "crash_manager.h"
 #include "platform/buttons.h"
 
+static SemaphoreHandle_t xSemaphoreLogger;
 
 /*
     Main application
@@ -79,15 +80,17 @@ int main(void) {
     }
     
     BTN2_SetInterruptHandler(&BTN2_Set);
-
+    
+    xSemaphoreLogger = xSemaphoreCreateBinary();
+    xSemaphoreGive(xSemaphoreLogger);
 
     /* Create the tasks defined within this file. */
     xTaskCreate(SIM808_taskCheck, "modemTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(SIM808_initModule, "modemIni", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, &modemInitHandle);
-    xTaskCreate(mainComunicationTask, "tareaPrincipal", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(mainComunicationTask, "tareaPrincipal", configMINIMAL_STACK_SIZE, xSemaphoreLogger, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(ANALOG_convert, "adcConvert", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(getADC, "prendeleds", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(generateTrama, "obtieneTramas", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(loggerFunction, "logger", configMINIMAL_STACK_SIZE, xSemaphoreLogger, tskIDLE_PRIORITY + 1, NULL);
 
     /* Finally start the scheduler. */
     vTaskStartScheduler();

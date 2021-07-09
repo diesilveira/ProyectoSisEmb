@@ -32,7 +32,7 @@ void unixTo(uint32_t epoch, char *buffer) {
     // Convierte un epoch de unix
     // a un string legible
     struct tm tm_info;
-    memcpy(&tm_info, gmtime(&epoch), sizeof (struct tm));
-    strftime(buffer, 80, "%a %Y-%m-%d %H:%M:%S", &tm_info);
+    memcpy(&tm_info, localtime(&epoch), sizeof (struct tm));
+    strftime(buffer, 30, "%a %Y-%m-%d %H:%M:%S %Z", &tm_info);
 
 }

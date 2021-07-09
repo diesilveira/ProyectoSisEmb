@@ -16,6 +16,8 @@ extern "C" {
     
     void mainComunicationTask(void *params);
     
+    void loggerFunction(void *params);
+    
 
     /* Provide C++ Compatibility */
 #ifdef __cplusplus

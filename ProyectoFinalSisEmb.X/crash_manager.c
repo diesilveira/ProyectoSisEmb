@@ -26,25 +26,25 @@ uint8_t getLevelValue(void);
 
 void setUmbral(uint8_t levelMin, uint8_t levelMax) {
     levelMin++;
-    if (adc_value < 128 && levelMin < 2) {
+    if (ANALOG_getResult() < 128 && levelMin < 2) {
         levelValue = 1;
         prendeLedsSetearUmbrales(1);
-    } else if ((adc_value < 256 && levelMin < 3) || levelMax == 2) {
+    } else if ((ANALOG_getResult() < 256 && levelMin < 3) || levelMax == 2) {
         levelValue = 2;
         prendeLedsSetearUmbrales(2);
-    } else if ((adc_value < 384 && levelMin < 4) || levelMax == 3) {
+    } else if ((ANALOG_getResult() < 384 && levelMin < 4) || levelMax == 3) {
         prendeLedsSetearUmbrales(3);
         levelValue = 3;
-    } else if ((adc_value < 512 && levelMin < 5) || levelMax == 4) {
+    } else if ((ANALOG_getResult() < 512 && levelMin < 5) || levelMax == 4) {
         prendeLedsSetearUmbrales(4);
         levelValue = 4;
-    } else if ((adc_value < 640 && levelMin < 6) || levelMax == 5) {
+    } else if ((ANALOG_getResult() < 640 && levelMin < 6) || levelMax == 5) {
         prendeLedsSetearUmbrales(5);
         levelValue = 5;
-    } else if ((adc_value < 768 && levelMin < 7) || levelMax == 6) {
+    } else if ((ANALOG_getResult() < 768 && levelMin < 7) || levelMax == 6) {
         prendeLedsSetearUmbrales(6);
         levelValue = 6;
-    } else if ((adc_value < 896 && levelMin < 8) || levelMax == 7) {
+    } else if ((ANALOG_getResult() < 896 && levelMin < 8) || levelMax == 7) {
         prendeLedsSetearUmbrales(7);
         levelValue = 7;
     } else {
@@ -88,12 +88,6 @@ void prendeLedsSetearUmbrales(uint8_t adc) {
         }
     }
     WS2812_send(leds, 8);
-}
-
-void getADC(void *params) {
-    while (true) {
-        adc_value = ANALOG_getResult();
-    }
 }
 
 /* *****************************************************************************

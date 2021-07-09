@@ -22,14 +22,16 @@ static uint8_t p_dest[110];
 
 static bool isPdestSet = false;
 
-uint8_t levelBrusco = 0;
-uint8_t levelChoque = 0;
+static uint8_t levelBrusco = 3;
+static uint8_t levelChoque = 6;
 
-uint8_t patronManejoActual = 2;
+static uint8_t patronManejoActual = 2;
 
 TickType_t delayLogger = 10000;
 
-//logger_struct_t logger[250];
+static logger_struct_t logger[250];
+static uint8_t idNumber = 0;
+static uint8_t loggerCount = 0;
 static bool receivedData = false;
 static uint8_t numBytes = 0;
 static uint8_t buffer[1];
@@ -37,6 +39,9 @@ static uint8_t buffer[1];
 static bool isFinish = false;
 
 static SemaphoreHandle_t xSemaphoreLeds;
+
+static char strId[80]; // usada para imprimir el id por serial
+static char bufferToTimeLog[30]; // usada para imprimir time por serial
 
 // Section: Local Functions                                                   */
 
@@ -47,7 +52,27 @@ static void imprimirMenu(void) {
     sendDataChar((char*) "3- Descargar Logs\n");
 }
 
-void mainMenu(void) {
+static void loggerManager(void) {
+
+    GPSPosition_t p_pos;
+    GPS_getPosition(&p_pos, p_dest);
+
+    logger[loggerCount].id = idNumber;
+    logger[loggerCount].milliseconds = getUnixTime();
+    logger[loggerCount].patronManejo = patronManejoActual;
+    logger[loggerCount].position = p_pos;
+
+    idNumber++;
+
+    if (loggerCount == 249) {
+        loggerCount = 0;
+    } else {
+        loggerCount++;
+    }
+
+}
+
+static void mainMenu(void) {
     //Seteamos valores iniciales a utilizar
     receivedData = false;
     numBytes = 0;
@@ -104,16 +129,40 @@ void mainMenu(void) {
                     GPS_generateGoogleMaps(p_linkDest, p_pos);
                     sendDataChar((char*) p_linkDest);
                     sendDataChar((char*) "\n");
-                    static char buffer[64];
-                    
+                    static char buffer[30];
+
                     unixTo(getUnixTime(), buffer);
                     sendDataChar((char*) buffer);
-                    
+
                     isFinish = true;
 
                     break;
                 case '3':
-                    //llama descargar los logs
+                    for (int i = 0; i < loggerCount ; i++) {
+                        
+                        sprintf(strId, "%i", logger[i].id);
+                        sendDataChar((char*) strId);
+
+                        sendDataChar((char*) " | ");
+                        
+                        unixTo((logger[i].milliseconds), &bufferToTimeLog);
+                        sendDataChar((char*) bufferToTimeLog);
+                        
+                        sendDataChar((char*) " | ");
+//                        static uint8_t p_linkDest[64];
+//                        GPS_generateGoogleMaps(p_linkDest, logger[i].position);
+//                        sendDataChar((char*) p_linkDest);
+                        
+                        sendDataChar((char*) " | ");
+                        if (logger[i].patronManejo = 0){
+                            sendDataChar((char*) "Manejo BRUSCO");
+                        } else if (logger[i].patronManejo = 1){
+                            sendDataChar((char*) "CHOQUE");
+                        } else {
+                            sendDataChar((char*) "Manejo NORMAL");
+                        }
+                        sendDataChar((char*) "\n");
+                    }
                     isFinish = true;
                     break;
                 default:
@@ -127,6 +176,7 @@ void mainMenu(void) {
 // Section: Interface Functions   */
 
 void mainComunicationTask(void *params) {
+    SemaphoreHandle_t xSemaphoreLogger = (SemaphoreHandle_t) params;
     xSemaphoreLeds = xSemaphoreCreateBinary();
     xSemaphoreGive(xSemaphoreLeds);
     float moduloAccel = 0;
@@ -142,9 +192,13 @@ void mainComunicationTask(void *params) {
         while (!ACCEL_Mod(&moduloAccel)) {
         }
         //el 3 por coso brusco y el 5 por coso de choque
-        if ((moduloAccel >= 3) && (moduloAccel < 5)) {
+        if ((moduloAccel >= levelBrusco) && (moduloAccel < levelChoque)) {
             patronManejoActual = 0;
             if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
+                if (xSemaphoreTake(xSemaphoreLogger, (TickType_t) 10) == pdTRUE) {
+                    loggerManager();
+                    xSemaphoreGive(xSemaphoreLogger);
+                }
                 for (int i = 0; i <= 2; i++) {
                     setLeds(5);
                     //        que prenda buzzer
@@ -157,9 +211,13 @@ void mainComunicationTask(void *params) {
             }
 
             // el 5 hay que cambiarlo por coso de choque
-        } else if (moduloAccel >= 5) {
+        } else if (moduloAccel >= levelChoque) {
             patronManejoActual = 1;
             if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
+                if (xSemaphoreTake(xSemaphoreLogger, (TickType_t) 10) == pdTRUE) {
+                    loggerManager();
+                    xSemaphoreGive(xSemaphoreLogger);
+                }
                 for (int i = 0; i <= 2; i++) {
                     setLeds(1);
                     //        que prenda buzzer
@@ -184,18 +242,17 @@ void mainComunicationTask(void *params) {
     }
 }
 
-//void loggerFunction(void *params) {
-//    int idNumber = 0;
-//    while (true) {
-//        for (int i = 0; i < 250; i++) {
-//            vTaskDelay(delayLogger);
-//            logger[i].id = idNumber;
-//            //            logger[i].milliseconds = RTCTIME
-//            logger[i].patronManejo = patronManejoActual;
-//            idNumber++;
-//        }
-//    }
-//}
+void loggerFunction(void *params) {
+    SemaphoreHandle_t xSemaphoreLogger = (SemaphoreHandle_t) params;
+
+    while (true) {
+        vTaskDelay(delayLogger);
+        if (xSemaphoreTake(xSemaphoreLogger, 0) == pdTRUE) {
+            loggerManager();
+            xSemaphoreGive(xSemaphoreLogger);
+        }
+    }
+}
 
 
 // Va a necesitar de statics

@@ -5,16 +5,15 @@
  
  
  
-// */
-//  typedef struct {
-//        uint16_t id;
-//        uint16_t milliseconds;
-//        uint8_t patronManejo;
-//        GPSPosition_t position;
-//
-//    } logger_struct_t;
-//
-//bool RTCC_BCDTimeSet(tm initialTime);
+ */
+  typedef struct _logger_struct_t{
+        uint16_t id;
+        uint32_t milliseconds;
+        uint8_t patronManejo;
+        GPSPosition_t position;
+
+    } logger_struct_t;
+
 
 uint32_t getUnixTime(void);
 
