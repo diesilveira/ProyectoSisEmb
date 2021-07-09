@@ -4,6 +4,11 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <logicalFolder name="f4" displayName="framework" projectFiles="true">
+        <itemPath>framework/Accelerometer/Accelerometer.h</itemPath>
+        <itemPath>framework/Analog/Analog.h</itemPath>
+        <itemPath>framework/GPS/GPS.h</itemPath>
+      </logicalFolder>
       <logicalFolder name="f1" displayName="freeRTOS" projectFiles="true">
         <itemPath>freeRTOS/include/FreeRTOS.h</itemPath>
         <itemPath>freeRTOS/include/croutine.h</itemPath>
@@ -14,6 +19,10 @@
         <itemPath>freeRTOS/include/task.h</itemPath>
         <itemPath>freeRTOS/include/timers.h</itemPath>
         <itemPath>freeRTOS/include/projdefs.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f3" displayName="interface" projectFiles="true">
+        <itemPath>interface/crash_manager.h</itemPath>
+        <itemPath>interface/user_communications.h</itemPath>
       </logicalFolder>
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
@@ -42,18 +51,15 @@
         <itemPath>mcc_generated_files/adc_module_features.h</itemPath>
         <itemPath>mcc_generated_files/uart1.h</itemPath>
       </logicalFolder>
+      <logicalFolder name="f2" displayName="platform" projectFiles="true">
+        <itemPath>platform/BUTTONS/buttons.h</itemPath>
+        <itemPath>platform/LIS3DH/LIS3DH.h</itemPath>
+        <itemPath>platform/SERIAL_PORT_MANAGER/serial_port_manager.h</itemPath>
+        <itemPath>platform/SIM808/SIM808.h</itemPath>
+        <itemPath>platform/WS2812/WS2812.h</itemPath>
+      </logicalFolder>
       <itemPath>FreeRTOSConfig.h</itemPath>
-      <itemPath>framework/Accelerometer/Accelerometer.h</itemPath>
-      <itemPath>platform/LIS3DH/LIS3DH.h</itemPath>
-      <itemPath>framework/Analog/Analog.h</itemPath>
-      <itemPath>platform/WS2812.h</itemPath>
-      <itemPath>platform/serial_port_manager.h</itemPath>
-      <itemPath>framework/user_communications.h</itemPath>
-      <itemPath>platform/SIM808.h</itemPath>
-      <itemPath>framework/GPS.h</itemPath>
-      <itemPath>crash_manager.h</itemPath>
-      <itemPath>platform/buttons.h</itemPath>
-      <itemPath>framework/utils.h</itemPath>
+      <itemPath>utils.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -62,6 +68,11 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <logicalFolder name="f4" displayName="framework" projectFiles="true">
+        <itemPath>framework/Accelerometer/Accelerometer.c</itemPath>
+        <itemPath>framework/Analog/Analog.c</itemPath>
+        <itemPath>framework/GPS/GPS.c</itemPath>
+      </logicalFolder>
       <logicalFolder name="f1" displayName="freeRTOS" projectFiles="true">
         <itemPath>freeRTOS/croutine.c</itemPath>
         <itemPath>freeRTOS/event_groups.c</itemPath>
@@ -72,6 +83,10 @@
         <itemPath>freeRTOS/portable/MemMang/heap_4.c</itemPath>
         <itemPath>freeRTOS/portable/MPLAB/PIC32MM/port.c</itemPath>
         <itemPath>freeRTOS/portable/MPLAB/PIC32MM/port_asm.S</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f3" displayName="interface" projectFiles="true">
+        <itemPath>interface/crash_manager.c</itemPath>
+        <itemPath>interface/user_communications.c</itemPath>
       </logicalFolder>
       <logicalFolder name="MCC Generated Files"
                      displayName="MCC Generated Files"
@@ -93,18 +108,15 @@
         <itemPath>mcc_generated_files/adc1.c</itemPath>
         <itemPath>mcc_generated_files/uart1.c</itemPath>
       </logicalFolder>
+      <logicalFolder name="f2" displayName="platform" projectFiles="true">
+        <itemPath>platform/BUTTONS/buttons.c</itemPath>
+        <itemPath>platform/LIS3DH/LIS3DH.c</itemPath>
+        <itemPath>platform/SERIAL_PORT_MANAGER/serial_port_manager.c</itemPath>
+        <itemPath>platform/SIM808/SIM808.c</itemPath>
+        <itemPath>platform/WS2812/WS2812.c</itemPath>
+      </logicalFolder>
       <itemPath>main.c</itemPath>
-      <itemPath>framework/Accelerometer/Accelerometer.c</itemPath>
-      <itemPath>platform/LIS3DH/LIS3DH.c</itemPath>
-      <itemPath>framework/Analog/Analog.c</itemPath>
-      <itemPath>platform/WS2812.c</itemPath>
-      <itemPath>platform/serial_port_manager.c</itemPath>
-      <itemPath>framework/user_communications.c</itemPath>
-      <itemPath>platform/SIM808.c</itemPath>
-      <itemPath>framework/GPS.c</itemPath>
-      <itemPath>crash_manager.c</itemPath>
-      <itemPath>platform/buttons.c</itemPath>
-      <itemPath>framework/utils.c</itemPath>
+      <itemPath>utils.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

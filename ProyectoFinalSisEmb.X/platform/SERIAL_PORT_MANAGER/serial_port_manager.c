@@ -2,10 +2,10 @@
   Section: Included Files
  */
 
-#include "../mcc_generated_files/usb/usb_device_cdc.h"
+#include "../../mcc_generated_files/usb/usb_device_cdc.h"
 #include "serial_port_manager.h"
 #include "FreeRTOS.h"
-#include "../freeRTOS/include/semphr.h"
+#include "../../freeRTOS/include/semphr.h"
 
 /**
   Section: Interface Functions

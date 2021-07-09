@@ -1,12 +1,9 @@
 
 /* Section: Included Files                                                    */
 
-#include "GPS.h"
+#include "../framework/GPS/GPS.h"
 
-/* Provide C++ Compatibility */
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 /* Section: Interface Functions  */
     
@@ -18,12 +15,6 @@ extern "C" {
     
     void loggerFunction(void *params);
     
-
-    /* Provide C++ Compatibility */
-#ifdef __cplusplus
-}
-#endif
-
 
 /* *****************************************************************************
  End of File

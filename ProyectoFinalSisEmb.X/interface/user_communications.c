@@ -4,16 +4,17 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include "../platform/serial_port_manager.h"
-#include "../platform/SIM808.h"
-#include "GPS.h"
-#include "../crash_manager.h"
-#include "../mcc_generated_files/pin_manager.h"
-#include "Accelerometer/Accelerometer.h"
+
+#include "crash_manager.h"
 #include "user_communications.h"
-#include "../platform/buttons.h"
-#include "utils.h"
+#include "../utils.h"
+#include "../framework/GPS/GPS.h"
+#include "../framework/Accelerometer/Accelerometer.h"
+#include "../mcc_generated_files/pin_manager.h"
 #include "../mcc_generated_files/rtcc.h"
+#include "../platform/SERIAL_PORT_MANAGER/serial_port_manager.h"
+#include "../platform/SIM808/SIM808.h"
+#include "../platform/BUTTONS/buttons.h"
 
 /* This section lists the other files that are included in this file.
 
@@ -31,6 +32,7 @@ static uint8_t patronManejoActual = NORMAL;
 TickType_t delayLogger = 10000;
 
 static logger_struct_t logger[250];
+
 static uint8_t idNumber = 0;
 static uint8_t loggerCount = 0;
 static bool receivedData = false;
@@ -90,7 +92,7 @@ void imprimirLogger(void) {
 
         sendDataChar((char*) " | ");
         static uint8_t p_linkDest[64];
-        GPS_generateGoogleMaps(p_linkDest, logger[i].position);
+        GPS_generateGoogleMaps(p_linkDest, &logger[i].position);
         sendDataChar((char*) p_linkDest);
 
         sendDataChar((char*) " | ");
@@ -159,7 +161,7 @@ static void mainMenu(SemaphoreHandle_t xSemaphoreLogger) {
                     GPSPosition_t p_pos;
                     GPS_getPosition(&p_pos, p_dest);
                     static uint8_t p_linkDest[64];
-                    GPS_generateGoogleMaps(p_linkDest, p_pos);
+                    GPS_generateGoogleMaps(p_linkDest, &p_pos);
                     sendDataChar((char*) p_linkDest);
                     sendDataChar((char*) "\n");
                     static char buffer[30];
@@ -204,8 +206,9 @@ void mainComunicationTask(void *params) {
         }
 
         if ((moduloAccel >= levelBrusco) && (moduloAccel < levelChoque)) {
-            patronManejoActual = BRUSCO;
+            
             if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
+                patronManejoActual = BRUSCO;
                 if (xSemaphoreTake(xSemaphoreLogger, (TickType_t) 10) == pdTRUE) {
                     loggerManager();
                     xSemaphoreGive(xSemaphoreLogger);
@@ -222,8 +225,9 @@ void mainComunicationTask(void *params) {
             }
 
         } else if (moduloAccel >= levelChoque) {
-            patronManejoActual = CHOQUE;
+            
             if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
+                patronManejoActual = CHOQUE;
                 if (xSemaphoreTake(xSemaphoreLogger, (TickType_t) 10) == pdTRUE) {
                     loggerManager();
                     xSemaphoreGive(xSemaphoreLogger);
@@ -241,8 +245,9 @@ void mainComunicationTask(void *params) {
 
 
         } else {
-            patronManejoActual = NORMAL;
+            
             if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
+                patronManejoActual = NORMAL;
                 setLeds(3);
                 xSemaphoreGive(xSemaphoreLeds);
             }

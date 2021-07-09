@@ -40,14 +40,30 @@
     @Remarks
         String must start with +CGNSINF: 
  **/
+
+void substring(char str[], char sub[], int pos, int len) {
+   int c = 0;
+   
+   while (c < len) {
+      sub[c] = str[pos+c-1];
+      c++;
+   }
+   sub[c] = '\0';
+}
+
 void GPS_getPosition(GPSPosition_t *p_pos, uint8_t *p_sentence) {
     uint8_t offset;
-    uint8_t *ptr;
+//    uint8_t *ptr;
 
     offset = GPS_RMC_RUN_LEN + GPS_RMC_COMMA_LEN + GPS_RMC_FIX_LEN + GPS_RMC_COMMA_LEN + GPS_RMC_UTC_LEN + GPS_RMC_COMMA_LEN + GPS_RMC_CGNSINF_LEN;
-    p_pos->latitude = strtod((p_sentence + offset), &ptr);
-    p_pos->longitude = strtod((ptr + GPS_RMC_COMMA_LEN), &ptr);
+//    p_pos->latitude = strtod((p_sentence + offset), &ptr);
+//    p_pos->longitude = strtod((ptr + GPS_RMC_COMMA_LEN), &ptr);
+    
+    substring(p_sentence, p_pos->latitude, (offset + 1), 10);
+    substring(p_sentence, p_pos->longitude, (offset + 10 + GPS_RMC_COMMA_LEN + 1), 10);
 }
+
+
 
 /**
     @Function
@@ -106,30 +122,33 @@ void GPS_getUTC(struct tm *p_newtime, uint8_t *p_sentence) {
         None
  **/
 double GPS_getGroundDistance(GPSPosition_t *a, GPSPosition_t *b) {
-    double angle;
-    double lat_a, lon_a, lat_b, lon_b;
+//    double angle;
+//    double lat_a, lon_a, lat_b, lon_b;
+//
+//    lat_a = a->latitude * M_PI / 180;
+//    lon_a = a->longitude * M_PI / 180;
+//    lat_b = b->latitude * M_PI / 180;
+//    lon_b = b->longitude * M_PI / 180;
+//
+//    angle = sqrt(cos(lat_a) * cos(lat_b) * pow(sin((lon_a - lon_b) / 2), 2) + pow(sin((lat_a - lat_b) / 2), 2));
+//    angle = 2 * asin(angle);
 
-    lat_a = a->latitude * M_PI / 180;
-    lon_a = a->longitude * M_PI / 180;
-    lat_b = b->latitude * M_PI / 180;
-    lon_b = b->longitude * M_PI / 180;
-
-    angle = sqrt(cos(lat_a) * cos(lat_b) * pow(sin((lon_a - lon_b) / 2), 2) + pow(sin((lat_a - lat_b) / 2), 2));
-    angle = 2 * asin(angle);
-
-    return angle * GPS_EARTH_RADIUS;
+    return 0;
 }
 
-void GPS_generateGoogleMaps(uint8_t *p_linkDest, GPSPosition_t p_gpsData) {
-    static uint8_t latitude[10];
-    static uint8_t longitude[10];    
+void GPS_generateGoogleMaps(uint8_t *p_linkDest, GPSPosition_t *p_gpsData) {
+//static char latitude[10];
+//static char longitude[10];    
+//    strcpy(latitude, p_gpsData->latitude);
+//    strcpy(longitude, p_gpsData->longitude);
+    
     
     strcpy(p_linkDest, "http://maps.google.com/?q=");
-    sprintf(latitude, "%f", p_gpsData.latitude);
-    strcat(p_linkDest, latitude);
+//    sprintf(latitude, "%f", p_gpsData.latitude);
+    strcat(p_linkDest, p_gpsData->latitude);
     strcat(p_linkDest, ",");
-    sprintf(longitude, "%f", p_gpsData.longitude);
-    strcat(p_linkDest, longitude);
+//    sprintf(longitude, "%f", p_gpsData.longitude);
+    strcat(p_linkDest, p_gpsData->longitude);
 }
 
 /*

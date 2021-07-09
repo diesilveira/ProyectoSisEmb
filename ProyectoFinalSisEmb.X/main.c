@@ -45,24 +45,22 @@
 /**
   Section: Included Files
  */
+#include <stdbool.h>
+#include <stdint.h>
+#include "mcc_generated_files/system.h"
+#include "mcc_generated_files/pin_manager.h"
+#include "platform/SIM808/SIM808.h"
+#include "platform/SERIAL_PORT_MANAGER/serial_port_manager.h"
+#include "platform/BUTTONS/buttons.h"
+#include "framework/Accelerometer/Accelerometer.h"
+#include "framework/Analog/Analog.h"
+#include "framework/GPS/GPS.h"
+#include "interface/user_communications.h"
+#include "interface/crash_manager.h"
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
-
-#include "mcc_generated_files/system.h"
-#include "mcc_generated_files/pin_manager.h"
-#include "framework/Accelerometer/Accelerometer.h"
-#include "framework/Analog/Analog.h"
-//#include "WS2812.h"
-#include <stdbool.h>
-#include <stdint.h>
-#include "framework/user_communications.h"
-#include "framework/GPS.h"
-#include "platform/SIM808.h"
-#include "platform/serial_port_manager.h"
-#include "crash_manager.h"
-#include "platform/buttons.h"
 
 static SemaphoreHandle_t xSemaphoreLogger;
 

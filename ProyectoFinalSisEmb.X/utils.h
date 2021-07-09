@@ -10,7 +10,6 @@
 #define BRUSCO 1
 #define CHOQUE 2
 
-
   typedef struct _logger_struct_t{
         uint16_t id;
         uint32_t milliseconds;
@@ -18,7 +17,6 @@
         GPSPosition_t position;
 
     } logger_struct_t;
-
 
 uint32_t getUnixTime(void);
 

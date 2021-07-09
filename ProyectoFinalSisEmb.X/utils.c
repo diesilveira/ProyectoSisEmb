@@ -5,11 +5,11 @@
  
  */
 #include <stdbool.h>
-#include "../mcc_generated_files/rtcc.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include "mcc_generated_files/rtcc.h"
 /*
  Utils Section for time functions 
  */

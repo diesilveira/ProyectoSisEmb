@@ -17,12 +17,14 @@
 /* Section: Included Files                                                    */
 
 #include "WS2812.h"
-#include "../mcc_generated_files/pin_manager.h"
-#include "../mcc_generated_files/interrupt_manager.h"
+
+#include "../../mcc_generated_files/pin_manager.h"
+#include "../../mcc_generated_files/interrupt_manager.h"
 
 /* Section: File Scope or Global Data                                         */
 
 const ws2812_t WHITE    = {255, 255, 255};
+const ws2812_t YELLOW   = {255,255,0};
 const ws2812_t RED      = {255, 0, 0};
 const ws2812_t GREEN    = {0, 255, 0};
 const ws2812_t BLUE     = {0, 0, 255};
@@ -245,6 +247,9 @@ void WS2812_setLEDColor(ws2812_t leds[], int ledColor, int ledNumber) {
             break;
         case 4:
             leds[ledNumber] = OFF;
+            break;
+        case 5:
+            leds[ledNumber] = YELLOW;
             break;
     }
 }
