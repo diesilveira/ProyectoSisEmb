@@ -6,6 +6,11 @@
  
  
  */
+#define NORMAL 0
+#define BRUSCO 1
+#define CHOQUE 2
+
+
   typedef struct _logger_struct_t{
         uint16_t id;
         uint32_t milliseconds;

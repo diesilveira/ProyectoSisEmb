@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "../platform/serial_port_manager.h"
 #include "../platform/SIM808.h"
 #include "GPS.h"
@@ -25,7 +26,7 @@ static bool isPdestSet = false;
 static uint8_t levelBrusco = 3;
 static uint8_t levelChoque = 6;
 
-static uint8_t patronManejoActual = 2;
+static uint8_t patronManejoActual = NORMAL;
 
 TickType_t delayLogger = 10000;
 
@@ -35,6 +36,9 @@ static uint8_t loggerCount = 0;
 static bool receivedData = false;
 static uint8_t numBytes = 0;
 static uint8_t buffer[1];
+
+static float moduloAccel = 0;
+static TickType_t xDelay = 166;
 
 static bool isFinish = false;
 
@@ -53,26 +57,55 @@ static void imprimirMenu(void) {
 }
 
 static void loggerManager(void) {
+    if (isPdestSet) {
+        GPSPosition_t p_pos;
+        GPS_getPosition(&p_pos, p_dest);
 
-    GPSPosition_t p_pos;
-    GPS_getPosition(&p_pos, p_dest);
+        logger[loggerCount].id = idNumber;
+        logger[loggerCount].milliseconds = getUnixTime();
+        logger[loggerCount].patronManejo = patronManejoActual;
+        logger[loggerCount].position = p_pos;
 
-    logger[loggerCount].id = idNumber;
-    logger[loggerCount].milliseconds = getUnixTime();
-    logger[loggerCount].patronManejo = patronManejoActual;
-    logger[loggerCount].position = p_pos;
+        idNumber++;
 
-    idNumber++;
-
-    if (loggerCount == 249) {
-        loggerCount = 0;
-    } else {
-        loggerCount++;
+        if (loggerCount == 249) {
+            loggerCount = 0;
+        } else {
+            loggerCount++;
+        }
     }
-
 }
 
-static void mainMenu(void) {
+void imprimirLogger(void) {
+    sendDataChar((char*) "\n");
+    for (int i = 0; i < loggerCount; i++) {
+
+        sprintf(strId, "%i", logger[i].id);
+        sendDataChar((char*) strId);
+
+        sendDataChar((char*) " | ");
+
+        unixTo((logger[i].milliseconds), bufferToTimeLog);
+        sendDataChar((char*) bufferToTimeLog);
+
+        sendDataChar((char*) " | ");
+        static uint8_t p_linkDest[64];
+        GPS_generateGoogleMaps(p_linkDest, logger[i].position);
+        sendDataChar((char*) p_linkDest);
+
+        sendDataChar((char*) " | ");
+        if (logger[i].patronManejo = NORMAL) {
+            sendDataChar((char*) "NORMAL");
+        } else if (logger[i].patronManejo = BRUSCO) {
+            sendDataChar((char*) "BRUSCO");
+        } else {
+            sendDataChar((char*) "CHOQUE");
+        }
+        sendDataChar((char*) "\n");
+    }
+}
+
+static void mainMenu(SemaphoreHandle_t xSemaphoreLogger) {
     //Seteamos valores iniciales a utilizar
     receivedData = false;
     numBytes = 0;
@@ -138,30 +171,9 @@ static void mainMenu(void) {
 
                     break;
                 case '3':
-                    for (int i = 0; i < loggerCount ; i++) {
-                        
-                        sprintf(strId, "%i", logger[i].id);
-                        sendDataChar((char*) strId);
-
-                        sendDataChar((char*) " | ");
-                        
-                        unixTo((logger[i].milliseconds), &bufferToTimeLog);
-                        sendDataChar((char*) bufferToTimeLog);
-                        
-                        sendDataChar((char*) " | ");
-//                        static uint8_t p_linkDest[64];
-//                        GPS_generateGoogleMaps(p_linkDest, logger[i].position);
-//                        sendDataChar((char*) p_linkDest);
-                        
-                        sendDataChar((char*) " | ");
-                        if (logger[i].patronManejo = 0){
-                            sendDataChar((char*) "Manejo BRUSCO");
-                        } else if (logger[i].patronManejo = 1){
-                            sendDataChar((char*) "CHOQUE");
-                        } else {
-                            sendDataChar((char*) "Manejo NORMAL");
-                        }
-                        sendDataChar((char*) "\n");
+                    if (xSemaphoreTake(xSemaphoreLogger, (TickType_t) 10) == pdTRUE) {
+                        imprimirLogger();
+                        xSemaphoreGive(xSemaphoreLogger);
                     }
                     isFinish = true;
                     break;
@@ -179,21 +191,20 @@ void mainComunicationTask(void *params) {
     SemaphoreHandle_t xSemaphoreLogger = (SemaphoreHandle_t) params;
     xSemaphoreLeds = xSemaphoreCreateBinary();
     xSemaphoreGive(xSemaphoreLeds);
-    float moduloAccel = 0;
-    TickType_t xDelay = 166;
+
     while (true) {
         if (BTN2_GetValue()) {
             apagaLeds();
             imprimirMenu();
-            mainMenu();
+            mainMenu(xSemaphoreLogger);
             sendDataChar((char*) "\nPresiona S2 para volver al Menú. GRACIAS!!\n");
         }
 
         while (!ACCEL_Mod(&moduloAccel)) {
         }
-        //el 3 por coso brusco y el 5 por coso de choque
+
         if ((moduloAccel >= levelBrusco) && (moduloAccel < levelChoque)) {
-            patronManejoActual = 0;
+            patronManejoActual = BRUSCO;
             if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
                 if (xSemaphoreTake(xSemaphoreLogger, (TickType_t) 10) == pdTRUE) {
                     loggerManager();
@@ -210,9 +221,8 @@ void mainComunicationTask(void *params) {
                 xSemaphoreGive(xSemaphoreLeds);
             }
 
-            // el 5 hay que cambiarlo por coso de choque
         } else if (moduloAccel >= levelChoque) {
-            patronManejoActual = 1;
+            patronManejoActual = CHOQUE;
             if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
                 if (xSemaphoreTake(xSemaphoreLogger, (TickType_t) 10) == pdTRUE) {
                     loggerManager();
@@ -231,7 +241,7 @@ void mainComunicationTask(void *params) {
 
 
         } else {
-            patronManejoActual = 2;
+            patronManejoActual = NORMAL;
             if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
                 setLeds(3);
                 xSemaphoreGive(xSemaphoreLeds);
@@ -253,28 +263,6 @@ void loggerFunction(void *params) {
         }
     }
 }
-
-
-// Va a necesitar de statics
-// del patron de manejo y posicion
-// También hay que tener una que sea
-// el último ID para poder irlo registrando
-//void loggearDatos(void) {
-//    struct logger_struct_t log;
-//    ID = ID++;
-//    log.id           = ID; // esta hay que declarar
-//    log.milliseconds = getUnixTime(); // hay que cambiar el tipo en el struct a uint32_t
-//    log.patronManejo = patronManejoActual;
-//    log.position     = position; // esta hay que declarar
-//    
-//    // Si ya tengo 250 registros, reseteo indice
-//    // y comienzo a rellenar el más antiguo
-//    if (loggerIndex == 249) {
-//        loggerIndex = 0;
-//    }
-//    // Relleno la posición con el log.
-//    logger[loggerIndex] = log;
-//}
 
 void generateTrama(void *params) {
     static uint8_t p_dest_local[110];
