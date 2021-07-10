@@ -20,12 +20,6 @@ uint8_t getLevelValue(void) {
     return levelValue;
 }
 
-void apagaLeds(void) {
-    ws2812_t leds[8];
-    WS2812_initializeLedArray(leds, 8);
-    WS2812_send(leds, 8);
-}
-
 void setLeds(uint8_t color) {
     ws2812_t leds[8];
     for (int i = 0; i < 8; i++) {

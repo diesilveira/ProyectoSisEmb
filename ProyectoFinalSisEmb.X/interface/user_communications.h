@@ -6,6 +6,14 @@
 #include "../freeRTOS/include/semphr.h"
 
 extern SemaphoreHandle_t xSemaphoreLogger;
+extern SemaphoreHandle_t xSemaphorePlot;
+
+#define  WHITE    0
+#define  RED      1
+#define  BLUE     2
+#define  GREEN    3
+#define  OFF      4
+#define  YELLOW   5
 
 
 

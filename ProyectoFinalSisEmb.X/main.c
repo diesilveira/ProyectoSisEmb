@@ -54,7 +54,7 @@
 #include "platform/SERIAL_PORT_MANAGER/serial_port_manager.h"
 #include "platform/BUTTONS/buttons.h"
 #include "framework/Accelerometer/Accelerometer.h"
-#include "framework/Analog/Analog.h"
+
 #include "framework/GPS/GPS.h"
 #include "interface/user_communications.h"
 #include "interface/crash_manager.h"
@@ -72,6 +72,8 @@ int main(void) {
     // initialize the device
     xSemaphoreLogger = xSemaphoreCreateBinary();
     xSemaphoreGive(xSemaphoreLogger);
+    xSemaphorePlot = xSemaphoreCreateBinary();
+    xSemaphoreGive(xSemaphorePlot);
 
     SYSTEM_Initialize();
     bool init = ACCEL_init();
@@ -88,7 +90,6 @@ int main(void) {
     xTaskCreate(SIM808_taskCheck, "modemTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(SIM808_initModule, "modemIni", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, &modemInitHandle);
     xTaskCreate(mainComunicationTask, "tareaPrincipal", 800, NULL, tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(ANALOG_convert, "adcConvert", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(generateTrama, "obtieneTramas", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(loggerFunction, "logger", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
 
