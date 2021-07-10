@@ -29,7 +29,7 @@ static uint8_t levelChoque = 6;
 
 static uint8_t patronManejoActual = NORMAL;
 
-TickType_t delayLogger = 10000;
+TickType_t delayLogger = 2000;
 
 static logger_struct_t logger[250];
 
@@ -40,74 +40,90 @@ static uint8_t numBytes = 0;
 static uint8_t buffer[1];
 
 static float moduloAccel = 0;
-static TickType_t xDelay = 166;
+static TickType_t xDelayLedsAlertas = 166;
+static uint8_t bufferTimeLog[4];
+
+SemaphoreHandle_t xSemaphoreLogger;
 
 static bool isFinish = false;
 
 static SemaphoreHandle_t xSemaphoreLeds;
-
 static char strId[80]; // usada para imprimir el id por serial
-static char bufferToTimeLog[30]; // usada para imprimir time por serial
 
 // Section: Local Functions                                                   */
 
 static void imprimirMenu(void) {
     sendDataChar((char*) "\nMenú:\n");
     sendDataChar((char*) "1- Setear umbrales\n");
-    sendDataChar((char*) "2- Pedir una trama\n");
+    sendDataChar((char*) "2- Configurar período del log\n");
     sendDataChar((char*) "3- Descargar Logs\n");
-}
-
-static void loggerManager(void) {
-    if (isPdestSet) {
-        GPSPosition_t p_pos;
-        GPS_getPosition(&p_pos, p_dest);
-
-        logger[loggerCount].id = idNumber;
-        logger[loggerCount].milliseconds = getUnixTime();
-        logger[loggerCount].patronManejo = patronManejoActual;
-        logger[loggerCount].position = p_pos;
-
-        idNumber++;
-
-        if (loggerCount == 249) {
-            loggerCount = 0;
-        } else {
-            loggerCount++;
-        }
-    }
 }
 
 void imprimirLogger(void) {
     sendDataChar((char*) "\n");
+    static char bufferToTimeLog[30]; // usada para imprimir time por serial
+    static uint8_t p_linkDest[64];
     for (int i = 0; i < loggerCount; i++) {
 
         sprintf(strId, "%i", logger[i].id);
         sendDataChar((char*) strId);
 
         sendDataChar((char*) " | ");
-
-        unixTo((logger[i].milliseconds), bufferToTimeLog);
+//        memset(buffer, '0', sizeof (bufferToTimeLog));
+        
+        unixTo((logger[i].seconds), bufferToTimeLog);
         sendDataChar((char*) bufferToTimeLog);
 
         sendDataChar((char*) " | ");
-        static uint8_t p_linkDest[64];
+
         GPS_generateGoogleMaps(p_linkDest, &logger[i].position);
         sendDataChar((char*) p_linkDest);
 
         sendDataChar((char*) " | ");
-        if (logger[i].patronManejo = NORMAL) {
+        if (logger[i].patronManejo == NORMAL) {
             sendDataChar((char*) "NORMAL");
-        } else if (logger[i].patronManejo = BRUSCO) {
+        } else if (logger[i].patronManejo == BRUSCO) {
             sendDataChar((char*) "BRUSCO");
         } else {
             sendDataChar((char*) "CHOQUE");
         }
         sendDataChar((char*) "\n");
+        vTaskDelay(50);
     }
 }
 
-static void mainMenu(SemaphoreHandle_t xSemaphoreLogger) {
+static void saveLog(void){
+    if (isPdestSet) {
+            GPSPosition_t p_pos;
+            GPS_getPosition(&p_pos, p_dest);
+
+            logger[loggerCount].id = idNumber;
+            logger[loggerCount].seconds = getUnixTime();
+            logger[loggerCount].patronManejo = patronManejoActual;
+            logger[loggerCount].position = p_pos;
+
+            idNumber++;
+
+            if (loggerCount == 249) {
+                loggerCount = 0;
+            } else {
+                loggerCount++;
+            }
+        }
+}
+
+static void loggerManager(uint8_t accion) {
+    switch (accion){
+        case ESCRIBIR:
+            saveLog();
+            break;
+        case IMPRIMIR:
+            imprimirLogger();
+            break;
+    }
+}
+
+static void mainMenu(void) {
     //Seteamos valores iniciales a utilizar
     receivedData = false;
     numBytes = 0;
@@ -136,7 +152,6 @@ static void mainMenu(SemaphoreHandle_t xSemaphoreLogger) {
                     levelBrusco = getLevelValue();
                     apagaLeds();
                     sendDataChar((char*) "Nivel de conduccion Brusca seteado con exito.\n\n");
-
                     sendDataChar((char*) "Nivel de choque.\n");
                     sendDataChar((char*) "Use la ruedita para elegir.\n");
                     sendDataChar((char*) "Luego envíe cualquier cosa por serial.\n");
@@ -152,34 +167,47 @@ static void mainMenu(SemaphoreHandle_t xSemaphoreLogger) {
                     isFinish = true;
                     break;
                 case '2':;
-                    sendDataChar((char*) "llama al gps");
+                    sendDataChar((char*) "Periodo de Log configurable:.\n");
+                    sendDataChar((char*) "Envíe por serial en segundos de 0 a 999.\n");
 
-                    while (!isPdestSet) {
-                        sendDataChar((char*) "Esperando trama valida.\n");
+                    receivedData = false;
+                    while (!receivedData) {
+                        numBytes = receiveData(&receivedData, bufferTimeLog, sizeof (buffer));
                     }
-                    sendDataChar((char*) "tiene una trama\n");
-                    GPSPosition_t p_pos;
-                    GPS_getPosition(&p_pos, p_dest);
-                    static uint8_t p_linkDest[64];
-                    GPS_generateGoogleMaps(p_linkDest, &p_pos);
-                    sendDataChar((char*) p_linkDest);
-                    sendDataChar((char*) "\n");
-                    static char buffer[30];
+                    bufferTimeLog[4] = '\0';
+                    TickType_t delayLogger = (TickType_t) (atoi(&bufferTimeLog[0]) * 1000);
 
-                    unixTo(getUnixTime(), buffer);
-                    sendDataChar((char*) buffer);
+
+//                    sendDataChar((char*) "llama al gps");
+//
+//                    while (!isPdestSet) {
+//                        sendDataChar((char*) "Esperando trama valida.\n");
+//                    }
+//                    sendDataChar((char*) "tiene una trama\n");
+//                    GPSPosition_t p_pos;
+//                    GPS_getPosition(&p_pos, p_dest);
+//                    static uint8_t p_linkDest[64];
+//                    GPS_generateGoogleMaps(p_linkDest, &p_pos);
+//                    sendDataChar((char*) p_linkDest);
+//                    sendDataChar((char*) "\n");
+//                    static char buffer[30];
+//
+//                    unixTo(getUnixTime(), &buffer);
+//                    sendDataChar((char*) buffer);
 
                     isFinish = true;
 
                     break;
                 case '3':
-                    if (xSemaphoreTake(xSemaphoreLogger, (TickType_t) 10) == pdTRUE) {
-                        imprimirLogger();
+                    if (xSemaphoreTake(xSemaphoreLogger, 10) == pdTRUE) {
+                        loggerManager(IMPRIMIR);
                         xSemaphoreGive(xSemaphoreLogger);
                     }
+
                     isFinish = true;
                     break;
                 default:
+                    sendDataChar((char*) "Ingrese un numero correcto.\n");
                     isFinish = true;
                     break;
             }
@@ -190,7 +218,7 @@ static void mainMenu(SemaphoreHandle_t xSemaphoreLogger) {
 // Section: Interface Functions   */
 
 void mainComunicationTask(void *params) {
-    SemaphoreHandle_t xSemaphoreLogger = (SemaphoreHandle_t) params;
+    //    SemaphoreHandle_t xSemaphoreLogger = (SemaphoreHandle_t) *params;
     xSemaphoreLeds = xSemaphoreCreateBinary();
     xSemaphoreGive(xSemaphoreLeds);
 
@@ -198,7 +226,7 @@ void mainComunicationTask(void *params) {
         if (BTN2_GetValue()) {
             apagaLeds();
             imprimirMenu();
-            mainMenu(xSemaphoreLogger);
+            mainMenu();
             sendDataChar((char*) "\nPresiona S2 para volver al Menú. GRACIAS!!\n");
         }
 
@@ -206,66 +234,59 @@ void mainComunicationTask(void *params) {
         }
 
         if ((moduloAccel >= levelBrusco) && (moduloAccel < levelChoque)) {
-            
+
             if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
                 patronManejoActual = BRUSCO;
-                if (xSemaphoreTake(xSemaphoreLogger, (TickType_t) 10) == pdTRUE) {
-                    loggerManager();
+                if (xSemaphoreTake(xSemaphoreLogger, 10) == pdTRUE) {
+                    loggerManager(ESCRIBIR);
                     xSemaphoreGive(xSemaphoreLogger);
                 }
                 for (int i = 0; i <= 2; i++) {
                     setLeds(5);
                     //        que prenda buzzer
-                    vTaskDelay(xDelay);
+                    vTaskDelay(xDelayLedsAlertas);
                     apagaLeds();
                     //         apaga buzzer
-                    vTaskDelay(xDelay);
+                    vTaskDelay(xDelayLedsAlertas);
                 }
                 xSemaphoreGive(xSemaphoreLeds);
             }
-
         } else if (moduloAccel >= levelChoque) {
-            
             if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
                 patronManejoActual = CHOQUE;
-                if (xSemaphoreTake(xSemaphoreLogger, (TickType_t) 10) == pdTRUE) {
-                    loggerManager();
+                if (xSemaphoreTake(xSemaphoreLogger, 10) == pdTRUE) {
+                    loggerManager(ESCRIBIR);
                     xSemaphoreGive(xSemaphoreLogger);
                 }
                 for (int i = 0; i <= 2; i++) {
                     setLeds(1);
                     //        que prenda buzzer
-                    vTaskDelay(xDelay);
+                    vTaskDelay(xDelayLedsAlertas);
                     apagaLeds();
                     //         apaga buzzer
-                    vTaskDelay(xDelay);
+                    vTaskDelay(xDelayLedsAlertas);
                 }
                 xSemaphoreGive(xSemaphoreLeds);
             }
-
-
         } else {
-            
+
             if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
                 patronManejoActual = NORMAL;
                 setLeds(3);
                 xSemaphoreGive(xSemaphoreLeds);
             }
-
         }
-
     }
 }
 
 void loggerFunction(void *params) {
-    SemaphoreHandle_t xSemaphoreLogger = (SemaphoreHandle_t) params;
-
     while (true) {
         vTaskDelay(delayLogger);
-        if (xSemaphoreTake(xSemaphoreLogger, 0) == pdTRUE) {
-            loggerManager();
+        if (xSemaphoreTake(xSemaphoreLogger, 10) == pdTRUE) {
+            loggerManager(ESCRIBIR);
             xSemaphoreGive(xSemaphoreLogger);
         }
+
     }
 }
 
@@ -289,6 +310,7 @@ void generateTrama(void *params) {
         }
 
         isPdestSet = true;
+        vTaskDelay(delayLogger);
     }
 }
 

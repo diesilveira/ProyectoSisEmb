@@ -49,6 +49,7 @@
 #include <stdint.h>
 #include "mcc_generated_files/system.h"
 #include "mcc_generated_files/pin_manager.h"
+#include "mcc_generated_files/rtcc.h"
 #include "platform/SIM808/SIM808.h"
 #include "platform/SERIAL_PORT_MANAGER/serial_port_manager.h"
 #include "platform/BUTTONS/buttons.h"
@@ -62,7 +63,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-static SemaphoreHandle_t xSemaphoreLogger;
 
 /*
     Main application
@@ -70,25 +70,27 @@ static SemaphoreHandle_t xSemaphoreLogger;
 
 int main(void) {
     // initialize the device
+    xSemaphoreLogger = xSemaphoreCreateBinary();
+    xSemaphoreGive(xSemaphoreLogger);
+
     SYSTEM_Initialize();
     bool init = ACCEL_init();
 
     while (!init) {
         ACCEL_init();
     }
-    
+
     BTN2_SetInterruptHandler(&BTN2_Set);
-    
-    xSemaphoreLogger = xSemaphoreCreateBinary();
-    xSemaphoreGive(xSemaphoreLogger);
+
+
 
     /* Create the tasks defined within this file. */
     xTaskCreate(SIM808_taskCheck, "modemTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(SIM808_initModule, "modemIni", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, &modemInitHandle);
-    xTaskCreate(mainComunicationTask, "tareaPrincipal", configMINIMAL_STACK_SIZE, xSemaphoreLogger, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(mainComunicationTask, "tareaPrincipal", 800, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(ANALOG_convert, "adcConvert", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(generateTrama, "obtieneTramas", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(loggerFunction, "logger", configMINIMAL_STACK_SIZE, xSemaphoreLogger, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(loggerFunction, "logger", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
 
     /* Finally start the scheduler. */
     vTaskStartScheduler();
