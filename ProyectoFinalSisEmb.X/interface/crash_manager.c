@@ -13,8 +13,7 @@
 
 static uint16_t adc_value = 0;
 static uint8_t levelValue = 0;
-
-// Section: Local Functions                                                   */
+                                                  
 uint8_t getLevelValue(void) {
     return levelValue;
 }

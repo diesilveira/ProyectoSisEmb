@@ -1,7 +1,6 @@
-
-
-
-
+/*
+ Declaramos las funciones de interface que se van a utilizar del crashManager
+ */
 void setUmbral(uint8_t levelMin, uint8_t levelMax);
 uint8_t getLevelValue(void);
 void setLeds(uint8_t tipoDeAlerta);

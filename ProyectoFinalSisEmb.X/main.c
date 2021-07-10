@@ -81,8 +81,6 @@ int main(void) {
 
     BTN2_SetInterruptHandler(&BTN2_Set);
 
-
-
     /* Create the tasks defined within this file. */
     xTaskCreate(SIM808_taskCheck, "modemTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(SIM808_initModule, "modemIni", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, &modemInitHandle);

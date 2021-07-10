@@ -17,7 +17,7 @@
 #include "../platform/SIM808/SIM808.h"
 #include "../platform/BUTTONS/buttons.h"
 
-/* Kernel includes. */
+/* Kernel includes.                                                           */
 #include "../freeRTOS/include/FreeRTOS.h"
 #include "../freeRTOS/include/task.h"
 
@@ -50,6 +50,7 @@ static uint8_t patronManejoActual = NORMAL;
  delay para el loggueo continuo
  */
 TickType_t delayLogger = DELAY_LOGGER_INICIAL;
+TickType_t delayPlot = DELAY_PLOT;
 static logger_struct_t logger[LOGGER_SIZE];
 static uint32_t idNumber = 0;       //id para el loggueo
 static uint8_t loggerCount = 0;     //lleva la cuenta de 0 a 249
@@ -190,7 +191,7 @@ static void mainMenu(void) {
         if (receivedData) {
             switch (menuBuffer[0]) {
                 case '1':
-                    // a la tarea analogConver como solo se va a ejecutar mientras
+                    // La tarea analogConver como solo se va a ejecutar mientras
                     // setteamos los umbrales le damos prioridad alta
                     // para que la interaccion sea mas fluida
                     xTaskCreate(ANALOG_convert, "analogConvert", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 3, &handleAnalog);
@@ -224,7 +225,7 @@ static void mainMenu(void) {
                     break;
                 case '2':;
                     sendDataChar((char*) "Periodo de Log configurable:\n");
-                    sendDataChar((char*) "Envíe por serial en segundos de 000 a 999 (3 dígitos).\n");
+                    sendDataChar((char*) "Envíe por serial en segundos de 001 a 999 (3 dígitos).\n");
 
                     receivedData = false;
                     while (!receivedData) {
@@ -253,7 +254,10 @@ static void mainMenu(void) {
 }
 
 // Section: Interface Functions   */
-
+/*
+ Tarea que se encarga de hacer un Round Robin entre el boton S2 para entrar al menú
+ y los niveles de conduccion acorde a la lectura del acelerometro
+ */
 void mainComunicationTask(void *params) {
     //    SemaphoreHandle_t xSemaphoreLogger = (SemaphoreHandle_t) *params;
     xSemaphoreLeds = xSemaphoreCreateBinary();
@@ -269,7 +273,7 @@ void mainComunicationTask(void *params) {
 
         while (!ACCEL_Mod(&moduloAccel)) {
         }
-
+            //emite alarma y loguea manejo brusco
         if ((moduloAccel >= levelBrusco) && (moduloAccel < levelChoque)) {
             if (xSemaphoreTake(xSemaphoreLeds, 100) == pdTRUE) {
                 patronManejoActual = BRUSCO;
@@ -279,14 +283,13 @@ void mainComunicationTask(void *params) {
                 }
                 for (int i = 0; i <= 2; i++) {
                     setLeds(YELLOW);
-                    //        que prenda buzzer
                     vTaskDelay(xDelayLedsAlertas);
                     setLeds(OFF);
-                    //         apaga buzzer
                     vTaskDelay(xDelayLedsAlertas);
                 }
                 xSemaphoreGive(xSemaphoreLeds);
             }
+            //emite alarma y loguea choque
         } else if (moduloAccel >= levelChoque) {
             if (xSemaphoreTake(xSemaphoreLeds, 100) == pdTRUE) {
                 
@@ -297,16 +300,14 @@ void mainComunicationTask(void *params) {
                 }
                 for (int i = 0; i <= 2; i++) {
                     setLeds(RED);
-                    //        que prenda buzzer
                     vTaskDelay(xDelayLedsAlertas);
                     setLeds(OFF);
-                    //         apaga buzzer
                     vTaskDelay(xDelayLedsAlertas);
                 }
                 xSemaphoreGive(xSemaphoreLeds);
             }
         } else {
-
+            //prende los leds verdes de manejo normal
             if (xSemaphoreTake(xSemaphoreLeds, 0) == pdTRUE) {
                 patronManejoActual = NORMAL;
                 setLeds(GREEN);
@@ -316,6 +317,10 @@ void mainComunicationTask(void *params) {
     }
 }
 
+/*
+ Tarea que se encarga de llamar al logger cada cierto tiempo estipulado
+ por defecto en 10s pero que puede ser modificado por el usuario
+ */
 void loggerFunction(void *params) {
     while (true) {
         vTaskDelay(delayLogger);
@@ -327,6 +332,9 @@ void loggerFunction(void *params) {
     }
 }
 
+/*
+ Genera una trama cada 10s y actualiza la trama global la cual esta protegida por semaforo
+ */
 void generateTrama(void *params) {
     static uint8_t p_dest_local[110];
     while (true) {
@@ -351,7 +359,7 @@ void generateTrama(void *params) {
             RTCC_TimeSet(&timeToSet);
         }
         isPdestSet = true;
-        vTaskDelay(delayLogger);
+        vTaskDelay(delayPlot);
     }
 }
 

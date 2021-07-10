@@ -19,9 +19,8 @@ extern SemaphoreHandle_t xSemaphorePlot;
 #define LEVEL_CHOQUE_INICIAL 6
 
 #define DELAY_LOGGER_INICIAL 10000
+#define DELAY_PLOT 10000
 #define LOGGER_SIZE 250
-
-
 
 /* Section: Interface Functions  */
     

@@ -37,7 +37,7 @@
         Generate a subtring from string.
    
     @Remarks
-        String must start with +CGNSINF: 
+        
  **/
 void substring(char str[], char sub[], int pos, int len) {
    int c = 0;

@@ -1,8 +1,4 @@
 /*
- 
- 
- 
- 
  */
 #include <stdbool.h>
 #include <stdint.h>
@@ -14,6 +10,9 @@
  Utils Section for time functions 
  */
 
+/*
+ Devuelve la hora del RTCC
+ */
 uint32_t getUnixTime(void) {
     struct tm currentTime;
     static time_t epoch;
@@ -25,13 +24,12 @@ uint32_t getUnixTime(void) {
     return (uint32_t)epoch;
 }
 
+/*
+ Transforma la hora del RTCC en formato legible
+ */
 void unixTo(uint32_t epoch, char *buffer) {
-    // Convierte un epoch de unix
-    // a un string legible
-    
     struct tm tm_info;
     memset( (uint8_t*) &tm_info, 0, sizeof(tm_info) );
     memcpy(&tm_info, (gmtime(&epoch)), sizeof (struct tm));
     strftime(buffer, 30, "%a %Y-%m-%d %H:%M:%S %Z", &tm_info);
-
 }
