@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include "../freeRTOS/include/FreeRTOS.h"
 #include "../freeRTOS/include/task.h"
-
 #include "../FreeRTOSConfig.h"
 #include "../freeRTOS/include/semphr.h"
 #include "../platform/WS2812/WS2812.h"
@@ -25,7 +24,6 @@ void setLeds(uint8_t color) {
     for (int i = 0; i < 8; i++) {
         WS2812_setLEDColor(leds, color, i);
     }
-
     WS2812_send(leds, 8);
 }
 

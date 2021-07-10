@@ -13,7 +13,7 @@
 #define IMPRIMIR 1
 
   typedef struct _logger_struct_t{
-        uint16_t id;
+        uint32_t id;
         uint32_t seconds;
         uint8_t patronManejo;
         GPSPosition_t position;

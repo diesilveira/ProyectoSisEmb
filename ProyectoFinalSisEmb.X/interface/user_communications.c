@@ -32,11 +32,11 @@ static uint8_t levelChoque = 6;
 
 static uint8_t patronManejoActual = NORMAL;
 
-TickType_t delayLogger = 2000;
+TickType_t delayLogger = 1000;
 
 static logger_struct_t logger[250];
 
-static uint8_t idNumber = 0;
+static uint32_t idNumber = 0;
 static uint8_t loggerCount = 0;
 static bool receivedData = false;
 static uint8_t numBytes = 0;
@@ -71,7 +71,7 @@ void imprimirLogger(void) {
     static uint8_t p_linkDest[64];
     for (int i = 0; i < loggerCount; i++) {
 
-        sprintf(strId, "%i", logger[i].id);
+        sprintf(strId, "%u", logger[i].id);
         sendDataChar((char*) strId);
 
         sendDataChar((char*) " | ");
@@ -148,7 +148,6 @@ static void mainMenu(void) {
         if (receivedData) {
             switch (buffer[0]) {
                 case '1':
-
                     xTaskCreate(ANALOG_convert, "adcConvert", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 3, &handleAnalog);
                     sendDataChar((char*) "Nivel de conduccion brusca.\n");
                     sendDataChar((char*) "Use la ruedita para elegir.\n");
