@@ -27,6 +27,29 @@
 
 
 /*******************************************************************************/
+/************************* LOCAL FUNCTIONS *************************************/
+/*******************************************************************************/
+/**
+    @Function
+        void substring(char str[], char sub[], int pos, int len)      
+      
+    @Summary
+        Generate a subtring from string.
+   
+    @Remarks
+        String must start with +CGNSINF: 
+ **/
+void substring(char str[], char sub[], int pos, int len) {
+   int c = 0;
+   
+   while (c < len) {
+      sub[c] = str[pos+c-1];
+      c++;
+   }
+   sub[c] = '\0';
+}
+
+/*******************************************************************************/
 /************************* INTERFACE FUNCTIONS *********************************/
 /*******************************************************************************/
 
@@ -41,26 +64,15 @@
         String must start with +CGNSINF: 
  **/
 
-void substring(char str[], char sub[], int pos, int len) {
-   int c = 0;
-   
-   while (c < len) {
-      sub[c] = str[pos+c-1];
-      c++;
-   }
-   sub[c] = '\0';
-}
-
 void GPS_getPosition(GPSPosition_t *p_pos, uint8_t *p_sentence) {
     uint8_t offset;
-//    uint8_t *ptr;
 
-    offset = GPS_RMC_RUN_LEN + GPS_RMC_COMMA_LEN + GPS_RMC_FIX_LEN + GPS_RMC_COMMA_LEN + GPS_RMC_UTC_LEN + GPS_RMC_COMMA_LEN + GPS_RMC_CGNSINF_LEN;
-//    p_pos->latitude = strtod((p_sentence + offset), &ptr);
-//    p_pos->longitude = strtod((ptr + GPS_RMC_COMMA_LEN), &ptr);
+    offset = GPS_RMC_RUN_LEN + GPS_RMC_COMMA_LEN + GPS_RMC_FIX_LEN +
+            GPS_RMC_COMMA_LEN + GPS_RMC_UTC_LEN + GPS_RMC_COMMA_LEN + 
+            GPS_RMC_CGNSINF_LEN;
     
-    substring(p_sentence, p_pos->latitude, (offset + 1), 10);
-    substring(p_sentence, p_pos->longitude, (offset + 10 + GPS_RMC_COMMA_LEN + 1), 10);
+    substring(p_sentence, p_pos->latitude, (offset + GPS_RMC_COMMA_LEN), GPS_RMC_LAT_LEN);
+    substring(p_sentence, p_pos->longitude, (offset + GPS_RMC_LON_LEN + GPS_RMC_COMMA_LEN), GPS_RMC_LAT_LEN);
 }
 
 
@@ -111,38 +123,11 @@ void GPS_getUTC(struct tm *p_newtime, uint8_t *p_sentence) {
     p_newtime->tm_sec = atoi(temp_str);
 }
 
-/**
-    @Function
-        double GPS_getGroundDistance( GPSPosition_t *a, GPSPosition_t *b )     
-      
-    @Summary
-        Calculates ground distance(in km) between to geographical points. (Uses spherical earth model)
-
-    @Remarks
-        None
- **/
-double GPS_getGroundDistance(GPSPosition_t *a, GPSPosition_t *b) {
-//    double angle;
-//    double lat_a, lon_a, lat_b, lon_b;
-//
-//    lat_a = a->latitude * M_PI / 180;
-//    lon_a = a->longitude * M_PI / 180;
-//    lat_b = b->latitude * M_PI / 180;
-//    lon_b = b->longitude * M_PI / 180;
-//
-//    angle = sqrt(cos(lat_a) * cos(lat_b) * pow(sin((lon_a - lon_b) / 2), 2) + pow(sin((lat_a - lat_b) / 2), 2));
-//    angle = 2 * asin(angle);
-
-    return 0;
-}
-
 void GPS_generateGoogleMaps(uint8_t *p_linkDest, GPSPosition_t *p_gpsData) {
    
     strcpy(p_linkDest, "http://maps.google.com/?q=");
-    
     strcat(p_linkDest, p_gpsData->latitude);
     strcat(p_linkDest, ",");
-    
     strcat(p_linkDest, p_gpsData->longitude);
 }
 

@@ -15,6 +15,12 @@ extern SemaphoreHandle_t xSemaphorePlot;
 #define  OFF      4
 #define  YELLOW   5
 
+#define LEVEL_BRUSCO_INICIAL 3
+#define LEVEL_CHOQUE_INICIAL 6
+
+#define DELAY_LOGGER_INICIAL 10000
+#define LOGGER_SIZE 250
+
 
 
 /* Section: Interface Functions  */

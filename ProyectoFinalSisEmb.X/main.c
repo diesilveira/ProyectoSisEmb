@@ -49,13 +49,10 @@
 #include <stdint.h>
 #include "mcc_generated_files/system.h"
 #include "mcc_generated_files/pin_manager.h"
-#include "mcc_generated_files/rtcc.h"
 #include "platform/SIM808/SIM808.h"
 #include "platform/SERIAL_PORT_MANAGER/serial_port_manager.h"
 #include "platform/BUTTONS/buttons.h"
 #include "framework/Accelerometer/Accelerometer.h"
-
-#include "framework/GPS/GPS.h"
 #include "interface/user_communications.h"
 #include "interface/crash_manager.h"
 

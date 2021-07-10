@@ -16,74 +16,107 @@
 #include "../platform/SERIAL_PORT_MANAGER/serial_port_manager.h"
 #include "../platform/SIM808/SIM808.h"
 #include "../platform/BUTTONS/buttons.h"
+
+/* Kernel includes. */
 #include "../freeRTOS/include/FreeRTOS.h"
 #include "../freeRTOS/include/task.h"
 
-/* This section lists the other files that are included in this file.
-
 /* Section: File Scope or Global Data                                         */
 
-static uint8_t p_dest[110];
-
+/*
+ Variables utilizadas para el setteo de la ultima trama del GPS
+ */
+static uint8_t globalPlot[110];
 static bool isPdestSet = false;
 
-static uint8_t levelBrusco = 3;
-static uint8_t levelChoque = 6;
+/*
+ Variables utilizadas para el setteo de los umbrales de manejo
+ inicialmente en 3 y 6 respectivamente.
+ 
+ Acorde a los valores obtenidos en la practica del acelerómetro
+ los mismos van de 0 a 10.879854, siendo a partir de 8.00 dificiles de alcanzar
+ por lo cual decidimos que los mismos se settearan del 1 al 8 acorde a los leds
+ mostrados.
+ */
+static uint8_t levelBrusco = LEVEL_BRUSCO_INICIAL;
+static uint8_t levelChoque = LEVEL_CHOQUE_INICIAL;
 
+/*
+ Patrón de manejo global, la misma se actualiza con el acelerómetro
+ */
 static uint8_t patronManejoActual = NORMAL;
 
-TickType_t delayLogger = 1000;
+/*
+ delay para el loggueo continuo
+ */
+TickType_t delayLogger = DELAY_LOGGER_INICIAL;
+static logger_struct_t logger[LOGGER_SIZE];
+static uint32_t idNumber = 0;       //id para el loggueo
+static uint8_t loggerCount = 0;     //lleva la cuenta de 0 a 249
 
-static logger_struct_t logger[250];
+/*
+ Transferencia de data por el serial
+ */
+static bool receivedData = false;   //true si se recibió algo por serial
+static uint8_t numBytes = 0;        //cantidad recibida por serial
+static uint8_t menuBuffer[1];       //buffer utilizado para el menú 
+static uint8_t bufferTimeLog[4];    //utilizada para settear el periodo de loggueo
 
-static uint32_t idNumber = 0;
-static uint8_t loggerCount = 0;
-static bool receivedData = false;
-static uint8_t numBytes = 0;
-static uint8_t buffer[1];
+static float moduloAccel = 0;       //modulo del acelerómetro actual, se actualiza a partir de getAccel.
+static TickType_t xDelayLedsAlertas = 166;  //Delay utilizado para prender y apagar los leds
 
-static float moduloAccel = 0;
-static TickType_t xDelayLedsAlertas = 166;
-static uint8_t bufferTimeLog[4];
-
+/*
+ Semáforos usados para el control de los registros y de la trama, estos se declaran extern en el .h
+ Luego se inicializan en el main(), y son utilizados por varias tareas
+ */
 SemaphoreHandle_t xSemaphoreLogger;
 SemaphoreHandle_t xSemaphorePlot;
-
-static bool isFinish = false;
-
+/*
+ Semaforo usado para encender los leds en las alertas, la diferencia es que este se usa solo en una tarea
+ */
 static SemaphoreHandle_t xSemaphoreLeds;
+
+/*
+ En el momento que isFinish es true, es porque termino la accion en el menú, y saldra solo
+ */
+static bool isFinish = false;   
+
 static char strId[80]; // usada para imprimir el id por serial
 
+/*
+ Este handler lo usamos para crear y eliminar la tarea del Conversor solo cuando 
+ la misma se utiliza, de este modo hacemos un uso mas eficiente del procesador.
+ */
 static TaskHandle_t handleAnalog;
 
 // Section: Local Functions                                                   */
-
+/*
+ Imprime por serial las opciones iniciales del menú.
+ */
 static void imprimirMenu(void) {
     sendDataChar((char*) "\nMenú:\n");
-    sendDataChar((char*) "1- Setear umbrales\n");
-    sendDataChar((char*) "2- Configurar período del log\n");
-    sendDataChar((char*) "3- Descargar Logs\n");
+    sendDataChar((char*) "1- Settear umbrales.\n");
+    sendDataChar((char*) "2- Configurar período del log.\n");
+    sendDataChar((char*) "3- Descargar Logs.\n");
 }
 
+/*
+ Recorre el log uno por uno y los imprime siguiendo el siguiente formato
+ | N° de ID | FECHA Y HORA EN UTC | link a GoogleMaps de la ubicacion | TIPO DE CONDUCCIÓN
+ */
 void imprimirLogger(void) {
     sendDataChar((char*) "\n");
     static char bufferToTimeLog[30]; // usada para imprimir time por serial
     static uint8_t p_linkDest[64];
     for (int i = 0; i < loggerCount; i++) {
-
         sprintf(strId, "%u", logger[i].id);
         sendDataChar((char*) strId);
-
         sendDataChar((char*) " | ");
-
         unixTo((logger[i].seconds), bufferToTimeLog);
         sendDataChar((char*) bufferToTimeLog);
-
         sendDataChar((char*) " | ");
-
         GPS_generateGoogleMaps(p_linkDest, &logger[i].position);
         sendDataChar((char*) p_linkDest);
-
         sendDataChar((char*) " | ");
         if (logger[i].patronManejo == NORMAL) {
             sendDataChar((char*) "NORMAL");
@@ -97,11 +130,14 @@ void imprimirLogger(void) {
     }
 }
 
+/*
+ Se encarga de guardar los registros del log
+ */
 static void saveLog(void) {
-    if (isPdestSet) {
+    if (isPdestSet) {       //si ya se obtuvo al menos una trama, sino no tiene sentido
         GPSPosition_t p_pos;
         if (xSemaphoreTake(xSemaphorePlot, 100) == pdTRUE) {
-            GPS_getPosition(&p_pos, p_dest);
+            GPS_getPosition(&p_pos, globalPlot);
             xSemaphoreGive(xSemaphorePlot);
         }
         logger[loggerCount].id = idNumber;
@@ -119,6 +155,11 @@ static void saveLog(void) {
     }
 }
 
+/*
+ Se encarga de dirigir la accion del logguer, ya se sea escribirlo o imprimirlo,
+ lo cual lo recibe por parametro (accion)
+ */
+
 static void loggerManager(uint8_t accion) {
     switch (accion) {
         case ESCRIBIR:
@@ -130,43 +171,49 @@ static void loggerManager(uint8_t accion) {
     }
 }
 
+/*
+ Menú de interaccion con el usuario
+ */
 static void mainMenu(void) {
     //Seteamos valores iniciales a utilizar
     receivedData = false;
     numBytes = 0;
-
     isFinish = false;
 
     while (!isFinish) {
-        //Esperamos a recibir cualquier letra, una vez recibida pasamos 
-        //al siguiente estado e imprimimos la bienvenida.
-        numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
+        //Esperamos a recibir cualquier letra
+        numBytes = receiveData(&receivedData, menuBuffer, sizeof (menuBuffer));
         do {
-            numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
+            numBytes = receiveData(&receivedData, menuBuffer, sizeof (menuBuffer));
         } while (!receivedData);
 
         if (receivedData) {
-            switch (buffer[0]) {
+            switch (menuBuffer[0]) {
                 case '1':
-                    xTaskCreate(ANALOG_convert, "adcConvert", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 3, &handleAnalog);
-                    sendDataChar((char*) "Nivel de conduccion brusca.\n");
+                    // a la tarea analogConver como solo se va a ejecutar mientras
+                    // setteamos los umbrales le damos prioridad alta
+                    // para que la interaccion sea mas fluida
+                    xTaskCreate(ANALOG_convert, "analogConvert", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 3, &handleAnalog);
+                    sendDataChar((char*) "Seleccion de umbral de conduccion BRUSCA:\n");
                     sendDataChar((char*) "Use la ruedita para elegir.\n");
                     sendDataChar((char*) "Luego envíe cualquier cosa por serial.\n");
+                    
                     receivedData = false;
                     while (!receivedData) {
                         setUmbral(1, 7);
-                        numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
+                        numBytes = receiveData(&receivedData, menuBuffer, sizeof (menuBuffer));
                     }
                     levelBrusco = getLevelValue();
                     setLeds(OFF);
                     sendDataChar((char*) "Nivel de conduccion Brusca seteado con exito.\n\n");
-                    sendDataChar((char*) "Nivel de choque.\n");
+                    sendDataChar((char*) "Seleccion de umbral de CHOQUE:\n");
                     sendDataChar((char*) "Use la ruedita para elegir.\n");
                     sendDataChar((char*) "Luego envíe cualquier cosa por serial.\n");
+                    
                     receivedData = false;
                     while (!receivedData) {
                         setUmbral(levelBrusco, 8);
-                        numBytes = receiveData(&receivedData, buffer, sizeof (buffer));
+                        numBytes = receiveData(&receivedData, menuBuffer, sizeof (menuBuffer));
                     }
                     levelChoque = getLevelValue();
                     setLeds(OFF);
@@ -180,15 +227,13 @@ static void mainMenu(void) {
                     sendDataChar((char*) "Envíe por serial en segundos de 000 a 999 (3 dígitos).\n");
 
                     receivedData = false;
-                    
                     while (!receivedData) {
                         numBytes = receiveData(&receivedData, bufferTimeLog, sizeof (bufferTimeLog));
                     }
-                    
                     bufferTimeLog[4] = '\0';
                     TickType_t delayLogger = (TickType_t) (atoi(&bufferTimeLog[0]) * 1000);
+                    
                     isFinish = true;
-
                     break;
                 case '3':
                     if (xSemaphoreTake(xSemaphoreLogger, 1000) == pdTRUE) {
@@ -292,7 +337,7 @@ void generateTrama(void *params) {
 
         if (xSemaphoreTake(xSemaphorePlot, 100) == pdTRUE) {
             for (int i = 0; i < 98; i++) {
-                p_dest[i] = p_dest_local[i];
+                globalPlot[i] = p_dest_local[i];
             }
             
             xSemaphoreGive(xSemaphorePlot);

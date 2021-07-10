@@ -107,7 +107,6 @@ void GPS_getUTC(struct tm *p_newtime, uint8_t *p_sentence);
     @Remarks
         None
  **/
-double GPS_getGroundDistance( GPSPosition_t *a, GPSPosition_t *b );
 
 void GPS_generateGoogleMaps( uint8_t *p_linkDest, GPSPosition_t *p_gpsData );
 

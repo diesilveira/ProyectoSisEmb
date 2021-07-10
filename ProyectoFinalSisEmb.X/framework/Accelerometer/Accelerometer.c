@@ -115,11 +115,9 @@ static LIS3DH_Fullscale_t escala = LIS3DH_FULLSCALE_2; //valor inicial por defec
 /* ************************************************************************** */
 /* ************************************************************************** */
 
-// *****************************************************************************
-
 /** 
   @Function
-    int ExampleInterfaceFunctionName ( int param1, int param2 ) 
+    bool ACCEL_init( void ) 
 
   @Summary
     Brief one-line description of the function.
